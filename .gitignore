@@ -1,0 +1,7 @@
+auth.ini
+auth-release.ini
+WinSCP.ini
+WinSCP.com
+*.exe
+*.jar
+ftpCmd.dat
