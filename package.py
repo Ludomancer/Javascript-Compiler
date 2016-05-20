@@ -278,32 +278,24 @@ try:
 		copyAllAssets(confData.updatingAssets, False)
 		for asset in confData.updatingAssets:
 			asset = asset.split(":")
+			nameIndex = 0
 			if len(asset) == 2:
-				tempPath = os.path.join(confData.buildDir, asset[1])
-				injectTo = os.path.join(os.getcwd(),tempPath)
-				fileUtils.replaceStringInFile(injectTo,"<app-name>",confData.gameName)
-				ftpHelper.startUpload(
-					tempPath,
-					confData.domain,
-					confData.username,
-					confData.password,
-					confData.projectRoot,
-					confData.targetPath,
-					asset[1]
-				)
+				nameIndex = 1
 			else:
-				tempPath = os.path.join(confData.buildDir, asset[0])
-				injectTo = os.path.join(os.getcwd(),tempPath)
-				fileUtils.replaceStringInFile(injectTo,"<app-name>",confData.gameName)
-				ftpHelper.startUpload(
-					tempPath,
-					confData.domain,
-					confData.username,
-					confData.password,
-					confData.projectRoot,
-					confData.targetPath,
-					asset[0]
-				)
+				nameIndex = 0
+
+			tempPath = os.path.join(confData.buildDir, asset[nameIndex])
+			injectTo = os.path.join(os.getcwd(),tempPath)
+			fileUtils.replaceStringInFile(injectTo,"<app-name>",confData.gameName)
+			ftpHelper.startUpload(
+				tempPath,
+				confData.domain,
+				confData.username,
+				confData.password,
+				confData.projectRoot,
+				confData.targetPath,
+				asset[nameIndex]
+			)
 			os.remove(tempPath)
 
 		ftpHelper.startUpload(
