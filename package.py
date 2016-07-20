@@ -190,16 +190,16 @@ def optimizeAssets():
     for root, dirnames, filenames in os.walk(confData.buildDir):
         for extension in ['jpg', 'jpeg', 'png', 'js']:
             for filename in fnmatch.filter(filenames, '*.' + extension):
-                print printer.subTitle("Optimizing: ") + filename
-
                 filename = os.path.join(os.getcwd(),root, filename)
+                print printer.subTitle("Optimizing: ") + filename
                 if (extension == 'jpg') or (extension == 'jpeg'):
-                    callString = "{1} -copy none -optimize -outfile {0} {0}".format(filename,jpgOptPat)
+                    callString = '"{1}" -copy none -optimize -outfile "{0}" "{0}"'.format(filename,jpgOptPat)
                 if (extension == 'png'):
-                    callString = "{1} --force --verbose --ext .png --speed 1 --quality=45-85 {0}".format(filename,pngOptPath)
+                    callString = '"{1}" --force --verbose --ext .png --speed 1 --quality=45-85 "{0}"'.format(filename,pngOptPath)
                 if (extension == 'js'):
-                    callString = "java -jar {1} --js_output_file={0} {0}".format(filename,compilerPath)
-
+                    callString = 'java -jar "{1}" --js_output_file="{0}" "{0}"'.format(filename,compilerPath)
+                else:
+                    continue
                 if confData.isVerbose:
                     subprocess.call(callString)
                 else:
