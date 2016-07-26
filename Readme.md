@@ -13,16 +13,16 @@ This project uses **Google Closure**, **WinSCP**, **jpegtran** and **pngquant** 
 - **Download** [pngquant](https://pngquant.org/).
 - **Download** [jpegtran](http://jpegclub.org/jpegtran/).
 - **Download** [Google Closure](https://developers.google.com/closure/compiler/).
-- **Copy** "jpegtran.exe", "pngquant.exe" and "closure-compiler-v<version-number.jar" to root folder of python scripts.
-- **Rename** "closure-compiler-v<version-number.jar" to **compiler.jar**
+- **Copy** **jpegtran.exe**, **pngquant.exe** and **closure-compiler-\<version-number\>.jar** to root folder of python scripts.
+- **Rename** **closure-compiler-\<version-number\>.jar** to **compiler.jar**
 - **Download** [WinSCP Portable](https://winscp.net/eng/download.php)
-- **Copy** WinSCP to root folder of python scripts.
+- **Copy** **WinSCP.exe** to root folder of python scripts.
 - **Configure** the config.ini file. (See below and sample config.ini in the project.)
 - **Create** and **configure** the auth.ini file. (See below)
 - **Run** **package.py**
 
 # Configuration Files
-# config.ini
+## config.ini
 
 **Project Settings**
 - **[Project]** = Title for project settings. Required.
@@ -30,9 +30,9 @@ This project uses **Google Closure**, **WinSCP**, **jpegtran** and **pngquant** 
 - **gamekey** = Unique name of the game, works as an id and should not have spaces.
 - **projectroot** = Root path of your JavaScript project.
 - **builddir** = Where should the JavaScript Compiler export the optimized files.
-- **items** = Which Files/Folders should be optimized. Comma separated file name list. Auto rename syntax, <file-name>:<new-file-name>
+- **items** = Which Files/Folders should be optimized. Comma separated file name list. Auto rename syntax, **\<file-name\>:\<new-file-name\>**
 - **debugitems** = Only included if the debug switch is enabled.
-- **debuginjectdata** = Replaces the given tag in given file with the given content. Syntax: <file-name>:<tag>:<new string>
+- **debuginjectdata** = Replaces the given tag in given file with the given content. Syntax: **\<file-name\>:\<tag\>:\<new string\>**
 
 **Compiler Settings**
 - **[Compiler]** = Title for compiler settings. Required.
@@ -43,14 +43,14 @@ This project uses **Google Closure**, **WinSCP**, **jpegtran** and **pngquant** 
 
 **Uplaoder Settings**
 - **[Uploader]** = Title for uploader settings. Required.
-- **releaseindex** = index.html file to  be used while releasing the game. You can use "<app-name>" tag in your index file and it will replaced by the gamename variable. Also "<app-version>" will be replaced by the bumped app version.
-- **updatingassets** = Assets to be copied to the server while the upload is still going on. An index file saying "Updating..." for example. Files provided here can be renamed automatically with the following Syntax, <file-name>:<new-file-name>.
+- **releaseindex** = index.html file to  be used while releasing the game. You can use **\<app-name\>** tag in your index file and it will replaced by the gamename variable. Also **\<app-version\>** will be replaced by the bumped app version.
+- **updatingassets** = Assets to be copied to the server while the upload is still going on. An index file saying "Updating..." for example. Files provided here can be renamed automatically with the following Syntax, **\<file-name\>:\<new-file-name\>**.
 - **targetpath** = Where to upload the project when the compilation is completed. This should be a directory name not the full path. Directory will be created if doesn't exists.
 - **uploadzip** = Should we upload the created zip file.
 - **uploadsource** = Should we uploaded the compiled project.
 - **timeout** = Time out for WinSCP.
 
-# auth.ini
+## auth.ini
 **FTP Settings**
 - **[FTP]** = Title for ftp settings. Required.
 - **username** = Username for FTP connection.
