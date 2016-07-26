@@ -13,8 +13,8 @@ This project uses **Google Closure**, **WinSCP**, **jpegtran** and **pngquant** 
 - **Download** [pngquant](https://pngquant.org/).
 - **Download** [jpegtran](http://jpegclub.org/jpegtran/).
 - **Download** [Google Closure](https://developers.google.com/closure/compiler/).
-- **copy** "jpegtran.exe", "pngquant.exe" and "closure-compiler-v<version-number.jar" to root folder of python scripts.
-- **rename** "closure-compiler-v<version-number.jar" to **compiler.jar**
+- **Copy** "jpegtran.exe", "pngquant.exe" and "closure-compiler-v<version-number.jar" to root folder of python scripts.
+- **Rename** "closure-compiler-v<version-number.jar" to **compiler.jar**
 - **Download** [WinSCP Portable](https://winscp.net/eng/download.php)
 - **Copy** WinSCP to root folder of python scripts.
 - **Configure** the config.ini file. (See below and sample config.ini in the project.)
