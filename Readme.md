@@ -59,8 +59,8 @@ This project uses **Google Closure**, **WinSCP**, **jpegtran** and **pngquant** 
 
 # Command Line Parameters
 **Notes**
-- (Same as configuring the config.ini file)
-- Those settings are preferred over config.ini file.
+- Same as configuring the config.ini file
+- Command line options are preferred over config.ini file.
 - Add 0 or 1 to toggle options. -o 1 to enabled optimization or -o 0 disable optimization for example.
 
 **Options**
