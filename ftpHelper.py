@@ -56,15 +56,15 @@ def startUpload(paths,domain,username,password,buildDir, targetRootPath):
 		path = path.split(";")
 		targetPath = targetRootPath
 		localPath = ""
+		print path[0]
 		if len(path) == 2:
-			localPath = os.path.normpath(os.path.join(compilerDir,buildDir,path[1]))
-			targetPath = path[1]
+			localPath = os.path.realpath(os.path.join(compilerDir,buildDir,path[1]))
+			targetPath = os.path.relpath(localPath, os.path.join(compilerDir,buildDir))
 		else:
-			localPath = os.path.normpath(os.path.join(compilerDir,buildDir,path[0]))
-			targetPath = path[0].replace(localPath,"")
-
-		if (targetPath == ""):
-			targetPath = None
+			localPath = os.path.realpath(os.path.join(compilerDir,buildDir,path[0]))
+			targetPath = os.path.relpath(localPath, os.path.join(compilerDir,buildDir))
+		print "localPath: " + localPath
+		print "targetPath: " + targetPath
 		ftpDataFile.write("LCD \"{0}\"\n".format(os.path.join(compilerDir,buildDir)))
 		ftpDataFile.write("CD \"{0}\"\n".format(targetRootPath))
 		if os.path.isdir(localPath):
@@ -79,7 +79,7 @@ def startUpload(paths,domain,username,password,buildDir, targetRootPath):
 
 	ftpDataFile.close()
 	DEVNULL = open(os.devnull, 'wb')
-
+	
 	callString = "\"" + os.path.normpath(os.path.join(compilerDir,"WinSCP.com")) + "\""
 	if timeOut > 0 is True:
 		callString += " /timeout={0}".format(timeOut)
