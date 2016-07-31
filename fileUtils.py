@@ -39,33 +39,42 @@ import shutil
 import printer
 
 
-def deleteDirRecursive(dir):
-	for root, dirs, files in os.walk(dir):
-				for f in files:
-					os.unlink(os.path.join(root, f))
-				for d in dirs:
-					shutil.rmtree(os.path.join(root, d))
-	return
+def deleteDirRecursive(path):
+	if os.path.isfile(path):
+		os.unlink(path)
+		return
+	elif os.path.isdir(path):
+		for root, dirs, files in os.walk(path):
+			for f in files:
+				os.unlink(os.path.join(root, f))
+			for d in dirs:
+				shutil.rmtree(os.path.join(root, d))
+		shutil.rmtree(path)
+		return
 
 
 def copyAllRecursive(sourceItem,destItem):
 	if os.path.isdir(sourceItem):
 		shutil.copytree(sourceItem, destItem)
-	else:
+	elif os.path.isfile(sourceItem):
 		shutil.copyfile(sourceItem, destItem)
 	return
 
 
 def replaceStringInFile(filePath, tag,changeTo):
-	print printer.subTitle("Injecting " + tag) + " with: " + printer.subTitle(changeTo) + " in " + filePath
+	isInjected = False
 	lines = []
 	with open(filePath) as infile:
 		for line in infile:
-			line = line.replace(tag, changeTo)
+			if tag in line:
+				line = line.replace(tag, changeTo)
+				isInjected = True
 			lines.append(line)
-	with open(filePath, 'w') as outfile:
-		for line in lines:
-			outfile.write(line)
+	if isInjected:
+		with open(filePath, 'w') as outfile:
+			for line in lines:
+				outfile.write(line)
+		print printer.subTitle("Injected " + tag) + " with: " + printer.subTitle(changeTo) + " in " + filePath
 	return
 
 

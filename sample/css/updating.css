@@ -1,0 +1,15 @@
+﻿body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color : black;
+}
+
+.updating{
+	margin: auto;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	width: 500px;
+	height: 200px;
+	color: white;
+}
