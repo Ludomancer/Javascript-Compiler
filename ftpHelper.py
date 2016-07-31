@@ -57,16 +57,22 @@ def startUpload(paths,domain,username,password,buildDir, targetRootPath):
 		targetPath = targetRootPath
 		localPath = ""
 		if len(path) == 2:
-			localPath = os.path.abspath(os.path.normpath(os.path.join(buildDir,path[1])))
+			localPath = os.path.normpath(os.path.join(compilerDir,buildDir,path[1]))
 			targetPath = path[1]
 		else:
-			localPath = os.path.abspath(os.path.normpath(os.path.join(buildDir,path[0])))
-			targetPath = targetRootPath
+			localPath = os.path.normpath(os.path.join(compilerDir,buildDir,path[0]))
+			targetPath = path[0].replace(localPath,"")
+
+		if (targetPath == ""):
+			targetPath = None
+		ftpDataFile.write("LCD \"{0}\"\n".format(os.path.join(compilerDir,buildDir)))
+		ftpDataFile.write("CD \"{0}\"\n".format(targetRootPath))
 		if os.path.isdir(localPath):
-			ftpDataFile.write("SYNCHRONIZE remote \"{0}\" \"{1}\"\n".format(localPath, targetPath))
+			if targetPath is None:
+				ftpDataFile.write("SYNCHRONIZE remote \"{0}\"\n".format(localPath))
+			else:
+				ftpDataFile.write("SYNCHRONIZE remote \"{0}\" \"{1}\"\n".format(localPath, targetPath))
 		else:
-			ftpDataFile.write("LCD \"{0}\"\n".format(buildDir))
-			ftpDataFile.write("CD \"{0}\"\n".format(targetRootPath))
 			ftpDataFile.write("PUT -neweronly \"{0}\" \"{1}\"\n".format(localPath,targetPath))
 	ftpDataFile.write("option batch off\n")
 	ftpDataFile.write("EXIT\n")
@@ -74,16 +80,16 @@ def startUpload(paths,domain,username,password,buildDir, targetRootPath):
 	ftpDataFile.close()
 	DEVNULL = open(os.devnull, 'wb')
 
-	callString = "\"" + os.path.abspath(os.path.normpath(os.path.join(compilerDir,"WinSCP.com"))) + "\""
+	callString = "\"" + os.path.normpath(os.path.join(compilerDir,"WinSCP.com")) + "\""
 	if timeOut > 0 is True:
 		callString += " /timeout={0}".format(timeOut)
 	if extraWinScpCmds is not None:
 		callString += extraWinScpCmds
 	callString += " /script=\"{0}\"".format(tempFile)
 	if isVerbose:
-		subprocess.call(callString)
+		subprocess.call(callString, shell=True)
 	else:
-		subprocess.call(callString, stdout=DEVNULL, stderr=subprocess.STDOUT)
+		subprocess.call(callString, stdout=DEVNULL, stderr=subprocess.STDOUT, shell=True)
 	DEVNULL.close()
 	os.unlink(ftpDataFile.name)
 	print printer.okGreen("DONE!")
