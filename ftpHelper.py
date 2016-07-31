@@ -42,26 +42,26 @@ extraWinScpCmds = ""
 isVerbose = False
 
 
-def startUpload(path,domain,username,password,projectRoot, targetPath, newFileName):
-	path = os.path.abspath(path)
-	print printer.title("Uploading: ") + path + printer.subTitle(" -> ") + targetPath
+def startUpload(paths,domain,username,password,projectRoot, targetPath):
 	tempFile = "ftpCmd.dat"
 	ftpDataFile = open(tempFile, "w")
 	ftpDataFile.write("OPEN ftp://{0}:{1}@{2}\n".format(username,password,domain))
 	ftpDataFile.write("option batch continue\n")
 	ftpDataFile.write("MKDIR {0}\n".format(targetPath))
+	print printer.title("Uploading: ") + paths + printer.subTitle(" -> ") + targetPath
+	if isinstance(paths,list) is False:
+		paths = [paths]
 
-	if os.path.isdir(path):
-		ftpDataFile.write("SYNCHRONIZE remote {0} {1}\n".format(path, targetPath))
-	else:
-		if newFileName is None:
-			fileName = os.path.basename(path)
+	for path in paths:
+		path = os.path.abspath(path)
+		if os.path.isdir(path):
+			ftpDataFile.write("SYNCHRONIZE remote {0} {1}\n".format(path, targetPath))
 		else:
-			fileName = newFileName
+			fileName = os.path.basename(path)
 
-		ftpDataFile.write("LCD {0}\n".format(projectRoot))
-		ftpDataFile.write("CD {0}\n".format(targetPath))
-		ftpDataFile.write("PUT -neweronly {0} {1}\n".format(path,fileName))
+			ftpDataFile.write("LCD {0}\n".format(projectRoot))
+			ftpDataFile.write("CD {0}\n".format(targetPath))
+			ftpDataFile.write("PUT -neweronly {0} {1}\n".format(path,fileName))
 
 	ftpDataFile.write("option batch off\n")
 	ftpDataFile.write("EXIT\n")

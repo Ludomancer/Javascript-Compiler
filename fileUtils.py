@@ -57,7 +57,7 @@ def copyAllRecursive(sourceItem,destItem):
 
 
 def replaceStringInFile(filePath, tag,changeTo):
-	print printer.title("Injecting " + tag + " with: ") + changeTo + " in " + filePath
+	print printer.subTitle("Injecting " + tag) + " with: " + printer.subTitle(changeTo) + " in " + filePath
 	lines = []
 	with open(filePath) as infile:
 		for line in infile:
@@ -66,7 +66,6 @@ def replaceStringInFile(filePath, tag,changeTo):
 	with open(filePath, 'w') as outfile:
 		for line in lines:
 			outfile.write(line)
-	print printer.okGreen("DONE!")
 	return
 
 
