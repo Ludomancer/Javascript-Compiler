@@ -65,7 +65,6 @@ class confData:
     zipPath = None
     uploadSource = None
     uploadZip = None
-    uploadOnly = None
     ftpTimeout = None
     extraWinScpCmds = None
     targetPath = ""
@@ -89,22 +88,24 @@ def readConfiguration():
         parser.add_argument("-ak","--appKey", help="App Key", default=None)
         parser.add_argument("-an","--appName", help="App Name. Defaults to Game Key", default=None)
         parser.add_argument("-avt","--appVersionTag", help="App Key Tag", default=defaultAppVersionTag)
-        parser.add_argument("-ant","--appNameTag", help="App Name. Defaults to Game Key", default=defaultAppNameTag)
+        parser.add_argument("-ant","--appNameTag", help="App Name Tag., default=defaultAppNameTag)
         parser.add_argument("-v","--verbose", help="Print log", default=None)
-        parser.add_argument("-uo","--uploadOnly", help="Re-upload previous build", default=None)
         parser.add_argument("-uz","--uploadZip", help="Should we upload the zip file.", default=None)
         parser.add_argument("-us","--uploadSource", help="Should we upload the source files.", default=None)
+        parser.add_argument("-pr","--projectRoot", help="Root path of your JavaScript project.", default=None)
         parser.add_argument("-bd","--buildDir", help="Where to copy the compiled files.", default=None)
         parser.add_argument("-t","--timeOut", help="FTP timeout.", default=None)
         parser.add_argument("-wsc","--winScpCmd", help="Extra WinSCP commands.", default=None)
         parser.add_argument("-cf","--configFile", help="Choose alternative config file.", default="config.ini")
         parser.add_argument("-af","--authFile", help="Choose alternative auth file.", default="auth.ini")
-        parser.add_argument("-ui","--updatingAssets", help="Alternative files to be used while updating.", default=None)
-        parser.add_argument("-ri","--releaseAssets", help="Alternative files to be used when upload is finished.", default=None)
+        parser.add_argument("-ua","--updatingAssets", help="Alternative files to be used while updating.", default=None)
+        parser.add_argument("-ra","--releaseAssets", help="Alternative files to be used when upload is finished.", default=None)
         parser.add_argument("-di","--debugItems", help="Items to be copied if debug is enabled", default=None)
         parser.add_argument("-dd","--debugInjectData", help="Debug Inject instructions.", default=None)
         parser.add_argument("-id","--injectData", help="Inject instructions.", default=None)
         parser.add_argument("-ver","--version", help="Version, it will be automatically created and bumped if not provided.", default=None)
+        parser.add_argument("-zp","--zipPath", help="Where to export the zip file containing the project in the end.", default=None)
+        parser.add_argument("-tp","--targetPath", help="Where to upload the project when the compilation is completed. This should be a directory name not the full path. Directory will be created if doesn't exists.", default="")
 
         args = parser.parse_args()
         if args.itemsToCopy is not None:
@@ -117,6 +118,8 @@ def readConfiguration():
             confData.appName = args.appName
         if args.appKey is not None:
             confData.appKey = args.appKey
+        if args.projectRoot is not None:
+            confData.projectRoot = args.projectRoot
         if args.buildDir is not None:
             confData.buildDir = args.buildDir
         if args.verbose is not None:
@@ -125,8 +128,6 @@ def readConfiguration():
             confData.uploadSource = True if args.uploadSource == "1" else False
         if args.uploadZip is not None:
             confData.uploadZip = True if args.uploadZip == "1" else False
-        if args.uploadOnly is not None:
-            confData.uploadOnly = True if args.uploadOnly == "1" else False
         if args.timeOut is not None:
             confData.ftpTimeout = args.timeOut
         if args.winScpCmd is not None:
@@ -147,6 +148,10 @@ def readConfiguration():
             confData.appNameTag = args.appNameTag
         if args.appVersionTag is not defaultAppVersionTag:
             confData.appVersionTag = args.appVersionTag
+        if args.zipPath is not None:
+            confData.zipPath = args.zipPath
+        if args.targetPath is not None:
+            confData.targetPath = args.targetPath
 
         config = ConfigParser.ConfigParser()
         config.read(args.configFile)
@@ -155,11 +160,13 @@ def readConfiguration():
         compilerSection = dictUtils.configSectionMap(config, "Compiler")
         uploaderSection = dictUtils.configSectionMap(config, "Uploader")
 
-        confData.targetPath = dictUtils.getKeyFromDict(uploaderSection, "targetpath")
+        if confData.targetPath is None:
+            confData.targetPath = dictUtils.getKeyFromDict(uploaderSection, "targetpath")
         if confData.targetPath is None:
             confData.targetPath = ""
 
-        confData.projectRoot = os.path.abspath(os.path.normpath(dictUtils.getKeyFromDict(projectSection, "projectroot")))
+        if confData.projectRoot is None:
+            confData.projectRoot = os.path.abspath(os.path.normpath(dictUtils.getKeyFromDict(projectSection, "projectroot")))
 
         if confData.buildDir is None:
             buildDir = os.path.normpath(dictUtils.getKeyFromDict(projectSection, "builddir"))
@@ -204,7 +211,8 @@ def readConfiguration():
                 confData.injectData[index] = data.split(";")
                 index = index + 1
 
-        confData.zipPath = dictUtils.getKeyFromDict(compilerSection, "zippath")
+        if confData.zipPath is None:
+            confData.zipPath = dictUtils.getKeyFromDict(compilerSection, "zippath")
         if confData.appKey is None:
             confData.appKey = dictUtils.getKeyFromDict(projectSection, "appkey")
         if confData.appName is None:
