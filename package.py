@@ -44,6 +44,9 @@ import dictUtils
 import fileUtils
 import ftpHelper
 
+defaultAppVersionTag = "<app-version>"
+defaultAppNameTag = "<app-name>"
+
 
 class confData:
     username = ""
@@ -51,53 +54,72 @@ class confData:
     domain = ""
     buildDir = None
     projectRoot = ""
-    itemsToCopy = []
-    debugItems = []
-    debugInjectData = ""
-    gameKey = None
-    gameName = None
+    itemsToCopy = None
+    debugItems = None
+    debugInjectData = None
+    appKey = None
+    appName = None
     injectDebug = None
     optimizeAssets = None
     isVerbose = None
     zipPath = None
     uploadSource = None
     uploadZip = None
-    uploadOnly = None
     ftpTimeout = None
     extraWinScpCmds = None
     targetPath = ""
     updatingAssets = None
-    releaseIndex = None
+    releaseAssets = None
+    injectData = None
+    version = None
+    appVersionTag = defaultAppVersionTag
+    appNameTag = defaultAppNameTag
+
+
+compilerDir = os.path.dirname(os.path.realpath(__file__))
 
 
 def readConfiguration():
     try:
         parser = argparse.ArgumentParser()
+        parser.add_argument("-i","--itemsToCopy", help="Items to copy.", default=None)
         parser.add_argument("-o", "--optimize", help="Optimizes assets on export.", default=None)
         parser.add_argument("-d", "--debug", help="Add debug scripts to the game.", default=None)
-        parser.add_argument("-gk","--gameKey", help="Game Key", default=None)
-        parser.add_argument("-gn","--gameName", help="Game Name. Defaults to Game Key", default=None)
+        parser.add_argument("-ak","--appKey", help="App Key", default=None)
+        parser.add_argument("-an","--appName", help="App Name. Defaults to Game Key", default=None)
+        parser.add_argument("-avt","--appVersionTag", help="App Key Tag", default=defaultAppVersionTag)
+        parser.add_argument("-ant","--appNameTag", help="App Name Tag., default=defaultAppNameTag)
         parser.add_argument("-v","--verbose", help="Print log", default=None)
-        parser.add_argument("-uo","--uploadOnly", help="Re-upload previous build", default=None)
         parser.add_argument("-uz","--uploadZip", help="Should we upload the zip file.", default=None)
         parser.add_argument("-us","--uploadSource", help="Should we upload the source files.", default=None)
+        parser.add_argument("-pr","--projectRoot", help="Root path of your JavaScript project.", default=None)
         parser.add_argument("-bd","--buildDir", help="Where to copy the compiled files.", default=None)
         parser.add_argument("-t","--timeOut", help="FTP timeout.", default=None)
         parser.add_argument("-wsc","--winScpCmd", help="Extra WinSCP commands.", default=None)
         parser.add_argument("-cf","--configFile", help="Choose alternative config file.", default="config.ini")
         parser.add_argument("-af","--authFile", help="Choose alternative auth file.", default="auth.ini")
-        parser.add_argument("-ui","--updatingAssets", help="Alternative index.html to be used while updating.", default=None)
-        parser.add_argument("-ri","--releaseIndex", help="Alternative index.html to be used when upload is finished.", default=None)
+        parser.add_argument("-ua","--updatingAssets", help="Alternative files to be used while updating.", default=None)
+        parser.add_argument("-ra","--releaseAssets", help="Alternative files to be used when upload is finished.", default=None)
+        parser.add_argument("-di","--debugItems", help="Items to be copied if debug is enabled", default=None)
+        parser.add_argument("-dd","--debugInjectData", help="Debug Inject instructions.", default=None)
+        parser.add_argument("-id","--injectData", help="Inject instructions.", default=None)
+        parser.add_argument("-ver","--version", help="Version, it will be automatically created and bumped if not provided.", default=None)
+        parser.add_argument("-zp","--zipPath", help="Where to export the zip file containing the project in the end.", default=None)
+        parser.add_argument("-tp","--targetPath", help="Where to upload the project when the compilation is completed. This should be a directory name not the full path. Directory will be created if doesn't exists.", default="")
 
         args = parser.parse_args()
+        if args.itemsToCopy is not None:
+            confData.itemsToCopy = args.itemsToCopy
         if args.optimize is not None:
             confData.optimizeAssets = True if args.optimize == "1" else False
         if args.debug is not None:
             confData.injectDebug = True if args.debug == "1" else False
-        if args.gameName is not None:
-            confData.gameName = args.gameName
-        if args.gameKey is not None:
-            confData.gameKey = args.gameKey
+        if args.appName is not None:
+            confData.appName = args.appName
+        if args.appKey is not None:
+            confData.appKey = args.appKey
+        if args.projectRoot is not None:
+            confData.projectRoot = args.projectRoot
         if args.buildDir is not None:
             confData.buildDir = args.buildDir
         if args.verbose is not None:
@@ -106,16 +128,30 @@ def readConfiguration():
             confData.uploadSource = True if args.uploadSource == "1" else False
         if args.uploadZip is not None:
             confData.uploadZip = True if args.uploadZip == "1" else False
-        if args.uploadOnly is not None:
-            confData.uploadOnly = True if args.uploadOnly == "1" else False
         if args.timeOut is not None:
             confData.ftpTimeout = args.timeOut
         if args.winScpCmd is not None:
             confData.extraWinScpCmds = args.winScpCmd
         if args.updatingAssets is not None:
             confData.updatingAssets = args.updatingAssets
-        if args.releaseIndex is not None:
-            confData.releaseIndex = args.releaseIndex
+        if args.releaseAssets is not None:
+            confData.releaseAssets = args.releaseAssets
+        if args.debugItems is not None:
+            confData.debugItems = args.debugItems
+        if args.debugInjectData is not None:
+            confData.debugInjectData = args.debugInjectData
+        if args.injectData is not None:
+            confData.injectData = args.injectData
+        if args.version is not None:
+            confData.version = args.version
+        if args.appNameTag is not defaultAppNameTag:
+            confData.appNameTag = args.appNameTag
+        if args.appVersionTag is not defaultAppVersionTag:
+            confData.appVersionTag = args.appVersionTag
+        if args.zipPath is not None:
+            confData.zipPath = args.zipPath
+        if args.targetPath is not None:
+            confData.targetPath = args.targetPath
 
         config = ConfigParser.ConfigParser()
         config.read(args.configFile)
@@ -124,11 +160,14 @@ def readConfiguration():
         compilerSection = dictUtils.configSectionMap(config, "Compiler")
         uploaderSection = dictUtils.configSectionMap(config, "Uploader")
 
-        confData.targetPath = dictUtils.getKeyFromDict(uploaderSection, "targetpath")
+        if confData.targetPath is None:
+            confData.targetPath = dictUtils.getKeyFromDict(uploaderSection, "targetpath")
         if confData.targetPath is None:
             confData.targetPath = ""
 
-        confData.projectRoot = os.path.abspath(os.path.normpath(dictUtils.getKeyFromDict(projectSection, "projectroot")))
+        if confData.projectRoot is None:
+            confData.projectRoot = os.path.abspath(os.path.normpath(dictUtils.getKeyFromDict(projectSection, "projectroot")))
+
         if confData.buildDir is None:
             buildDir = os.path.normpath(dictUtils.getKeyFromDict(projectSection, "builddir"))
         else:
@@ -136,15 +175,58 @@ def readConfiguration():
 
         confData.buildDir = os.path.abspath(os.path.join(confData.projectRoot, buildDir))
 
-        confData.itemsToCopy = dictUtils.getKeyFromDict(projectSection, "items").split(",")
-        confData.debugItems = dictUtils.getKeyFromDict(projectSection, "debugitems").split(",")
-        confData.debugInjectData = dictUtils.getKeyFromDict(projectSection, "debuginjectdata").split(":")
-        confData.zipPath = dictUtils.getKeyFromDict(compilerSection, "zippath")
+        if confData.itemsToCopy is None:
+            items = dictUtils.getKeyFromDict(projectSection, "itemstocopy")
+        else:
+            items = confData.itemsToCopy
 
-        if confData.gameKey is None:
-            confData.gameKey = dictUtils.getKeyFromDict(projectSection, "gamekey")
-        if confData.gameName is None:
-            confData.gameName = dictUtils.getKeyFromDict(projectSection, "gamename")
+        if items:
+            confData.itemsToCopy = items.split(",")
+        if confData.debugItems is None:
+            items = dictUtils.getKeyFromDict(projectSection, "debugitems")
+        else:
+            items = confData.debugItems
+        if items:
+            confData.debugItems = items.split(",")
+
+        if confData.debugInjectData is None:
+            items = dictUtils.getKeyFromDict(projectSection, "debuginjectdata")
+        else:
+            items = confData.debugInjectData
+        if items:
+            confData.debugInjectData = items.split(",")
+            index = 0
+            for data in confData.debugInjectData:
+                confData.debugInjectData[index] = data.split(";")
+                index = index + 1
+
+        if confData.injectData is None:
+            items = dictUtils.getKeyFromDict(projectSection, "injectdata")
+        else:
+            items = confData.injectData
+        if items:
+            confData.injectData = items.split(",")
+            index = 0
+            for data in confData.injectData:
+                confData.injectData[index] = data.split(";")
+                index = index + 1
+
+        if confData.zipPath is None:
+            confData.zipPath = dictUtils.getKeyFromDict(compilerSection, "zippath")
+        if confData.appKey is None:
+            confData.appKey = dictUtils.getKeyFromDict(projectSection, "appkey")
+        if confData.appName is None:
+            confData.appName = dictUtils.getKeyFromDict(projectSection, "appname")
+
+        if confData.appNameTag is defaultAppNameTag:
+            temp = dictUtils.getKeyFromDict(projectSection, "appnametag")
+            if temp:
+                confData.appNameTag = temp
+        if confData.appVersionTag is defaultAppVersionTag:
+            temp = dictUtils.getKeyFromDict(projectSection, "appversiontag")
+            if temp:
+                confData.appVersionTag = temp
+
         if confData.optimizeAssets is None:
             confData.optimizeAssets = dictUtils.getKeyFromDict(compilerSection, "optimize")
         if confData.injectDebug is None:
@@ -153,7 +235,6 @@ def readConfiguration():
             confData.isVerbose = dictUtils.getKeyFromDict(compilerSection, "verbose")
         if confData.zipPath is not None:
             confData.zipPath = confData.zipPath.replace(".zip", "")
-
         if confData.uploadSource is None:
             confData.uploadSource = dictUtils.getKeyFromDict(uploaderSection, "uploadsource")
         if confData.uploadZip is None:
@@ -162,10 +243,20 @@ def readConfiguration():
             confData.ftpTimeout = dictUtils.getKeyFromDict(uploaderSection, "timeout")
         if confData.extraWinScpCmds is None:
             confData.extraWinScpCmds = dictUtils.getKeyFromDict(uploaderSection, "extraWinScpCmds")
+
         if confData.updatingAssets is None:
-            confData.updatingAssets = dictUtils.getKeyFromDict(uploaderSection, "updatingassets").split(",")
-        if confData.releaseIndex is None:
-            confData.releaseIndex = dictUtils.getKeyFromDict(uploaderSection, "releaseindex")
+            items = dictUtils.getKeyFromDict(uploaderSection, "updatingassets")
+        else:
+            items = confData.updatingAssets
+        if items:
+            confData.updatingAssets = items.split(",")
+
+        if confData.releaseAssets is None:
+            items = dictUtils.getKeyFromDict(uploaderSection, "releaseassets")
+        else:
+            items = confData.releaseAssets
+        if items:
+            confData.releaseAssets = items.split(",")
 
         if confData.ftpTimeout is not None and confData.ftpTimeout.isdigit() is False:
             confData.ftpTimeout = 20
@@ -191,23 +282,26 @@ def readConfiguration():
 
 
 def copyAllAssets(itemList, clear):
-    print printer.title("Clearing: ") + confData.buildDir
+    if itemList is None:
+        return
     if(os.path.exists(confData.buildDir)):
         if clear is True:
+            print printer.title("Clearing: ") + confData.buildDir
             fileUtils.deleteDirRecursive(confData.buildDir)
+            os.mkdir(confData.buildDir)
     else:
         os.mkdir(confData.buildDir)
 
     print printer.title("Copying Assets")
 
     for item in itemList:
-        itemData = item.split(":")
-        sourceItem = os.path.join(os.getcwd(),confData.projectRoot, itemData[0])
+        itemData = item.split(";")
+        sourceItem = os.path.join(compilerDir,confData.projectRoot, itemData[0])
 
         if(len(itemData) == 2):
-            destItem = os.path.join(os.getcwd(),confData.buildDir, itemData[1])
+            destItem = os.path.join(compilerDir,confData.buildDir, itemData[1])
         else:
-            destItem = os.path.join(os.getcwd(),confData.buildDir, itemData[0])
+            destItem = os.path.join(compilerDir,confData.buildDir, itemData[0])
 
         print printer.subTitle("Copying: ") + sourceItem + printer.subTitle(" -> ") + destItem
 
@@ -218,20 +312,20 @@ def copyAllAssets(itemList, clear):
 
 def optimizeAssets():
     print printer.title("Optimizing Assets")
-    compilerPath = os.path.join(os.getcwd(), "compiler.jar")
-    pngOptPath = os.path.join(os.getcwd(), "pngquant.exe")
-    jpgOptPat = os.path.join(os.getcwd(), "jpegtran.exe")
+    compilerPath = os.path.join(compilerDir, "compiler.jar")
+    pngOptPath = os.path.join(compilerDir, "pngquant.exe")
+    jpgOptPat = os.path.join(compilerDir, "jpegtran.exe")
     DEVNULL = open(os.devnull, 'wb')
     for root, dirnames, filenames in os.walk(confData.buildDir):
         for extension in ['jpg', 'jpeg', 'png', 'js']:
             for filename in fnmatch.filter(filenames, '*.' + extension):
-                filename = os.path.join(os.getcwd(),root, filename)
+                filename = os.path.join(compilerDir,root, filename)
                 print printer.subTitle("Optimizing: ") + filename
                 if (extension == 'jpg') or (extension == 'jpeg'):
                     callString = '"{1}" -copy none -optimize -outfile "{0}" "{0}"'.format(filename,jpgOptPat)
-                if (extension == 'png'):
+                elif (extension == 'png'):
                     callString = '"{1}" --force --verbose --ext .png --speed 1 --quality=45-85 "{0}"'.format(filename,pngOptPath)
-                if (extension == 'js'):
+                elif (extension == 'js'):
                     callString = 'java -jar "{1}" --js_output_file="{0}" "{0}"'.format(filename,compilerPath)
                 else:
                     continue
@@ -244,42 +338,57 @@ def optimizeAssets():
     return
 
 
-def prepareIndexFile():
-    copyAllAssets([confData.releaseIndex + ":index.html"], False)
-    if confData.injectDebug:
-        injectDebug(confData.debugItems,confData.debugInjectData)
-    injectTo = os.path.join(os.getcwd(),confData.buildDir, "index.html")
-    fileUtils.replaceStringInFile(injectTo,"<app-name>",confData.gameName)
-
-    if bumpVersionNumber() is False:
-        print "Program Terminated."
-        sys.exit()
-    else:
-        return
-
-
 def injectDebug(items,debugInjectData):
+    if items is None:
+        return
     print printer.title("Injecting Debug Files")
-
     for item in items:
-        sourceItem = os.path.join(os.getcwd(),confData.projectRoot, item)
-        destItem = os.path.join(os.getcwd(),confData.buildDir, item)
+        sourceItem = os.path.join(compilerDir,confData.projectRoot, item)
+        destItem = os.path.join(compilerDir,confData.buildDir, item)
 
         print printer.subTitle("Copying: ") + sourceItem + printer.subTitle(" -> ") + destItem
 
         fileUtils.copyAllRecursive(sourceItem,destItem)
-
-    injectTo = os.path.join(os.getcwd(),confData.buildDir, debugInjectData[0])
-
-    fileUtils.replaceStringInFile(injectTo,debugInjectData[1],debugInjectData[2])
-
+    for injectData in debugInjectData:
+        injectStringToFile(injectData[0],injectData[1],injectData[2],confData.buildDir)
     print printer.okGreen("DONE!")
     return
 
 
+def injectStrings(injectDatas,rootPath):
+    if injectDatas is None:
+        return
+    for injectData in injectDatas:
+        injectStringToFile(injectData[0],injectData[1],injectData[2],rootPath)
+
+
+def injectStringToFile(file, toReplace, toInject, rootPath):
+    if file is None:
+        return
+    injectTo = os.path.join(compilerDir,rootPath, file)
+    if os.path.isfile(injectTo):
+        fileUtils.replaceStringInFile(injectTo,toReplace,toInject)
+
+
+def injectAppVersion(version, rootPath):
+    print printer.title("Injecting App Version")
+    for root, dirnames, filenames in os.walk(rootPath):
+        for filename in filenames:
+            filename = os.path.join(compilerDir,root, filename)
+            injectStringToFile(filename,confData.appVersionTag,version,rootPath)
+
+
+def injectAppName(rootPath):
+    print printer.title("Injecting App Name")
+    for root, dirnames, filenames in os.walk(rootPath):
+        for filename in filenames:
+            filename = os.path.join(compilerDir,root, filename)
+            injectStringToFile(filename,confData.appNameTag,confData.appName,rootPath)
+
+
 def bumpVersionNumber():
     print printer.title("Bumping version number")
-    targetPath = os.path.join(os.getcwd(), confData.projectRoot, "gameVersion.ini")
+    targetPath = os.path.join(compilerDir, confData.projectRoot, "appVersion.ini")
     target = None
     version = 0
     if(os.path.exists(targetPath)):
@@ -290,75 +399,110 @@ def bumpVersionNumber():
         except:
             target.close()
             print printer.warn("Failed to bump version!")
-            return False
-
+            print "Program Terminated."
+            sys.exit()
     target = open(targetPath, 'w')
     target.write(str(version))
     target.close()
-    tempPath = os.path.join(confData.buildDir, "index.html")
-    injectTo = os.path.join(os.getcwd(),tempPath)
-    fileUtils.replaceStringInFile(injectTo, "<app-version>", str(version))
+    confData.version = version
     return True
 
-try:
-    scriptDir = os.getcwd()
-    readConfiguration()
 
-    if confData.uploadOnly is not True:
-        copyAllAssets(confData.itemsToCopy, True)
-        if confData.injectDebug is True:
-            copyAllAssets(confData.debugItems, False)
+def prepareForRelease(clearBuildDir):
+    # Copy actual assets
+    copyAllAssets(confData.itemsToCopy,clearBuildDir)
+    if confData.optimizeAssets is True:
+        optimizeAssets()
+    doInjections()
+
+
+def doInjections():
+    # Inject debug to all assets.
+    if confData.injectDebug and confData.debugItems and confData.debugInjectData:
+        injectDebug(confData.debugItems,confData.debugInjectData)
+    # Inject configured tags to all assets.
+    if confData.injectData:
+        injectStrings(confData.injectData,confData.buildDir)
+    injectAppVersion(str(confData.version),confData.buildDir)
+    injectAppName(confData.buildDir)
+
+
+def uploadUpdatingAssets():
+    if confData.updatingAssets is not None:
+        print printer.title("Preparing and Uplading uploadingAssets")
+        # Prepare and upload updatingAssets assets if necessary.
+        copyAllAssets(confData.updatingAssets, True)
+        # Re-inject everything so updating assets also get an injection. Need to optimize just apply for the new files.
+        doInjections()
+        ftpHelper.startUpload(
+            confData.updatingAssets,
+            confData.domain,
+            confData.username,
+            confData.password,
+            confData.buildDir,
+            confData.targetPath
+        )
+        print printer.title("Clearing uploadingAssets")
+        # Remove updating assets.
+        for updatingAsset in confData.updatingAssets:
+            updatingAsset = updatingAsset.split(";")
+            if len(updatingAsset) == 2:
+                fileUtils.deleteDirRecursive(os.path.join(compilerDir, confData.buildDir,updatingAsset[1]))
+            else:
+                fileUtils.deleteDirRecursive(os.path.join(compilerDir, confData.buildDir,updatingAsset[0]))
+
+
+def uploadSource():
+    print printer.title("Uploading Source Files")
+
+    print printer.title("Preparing and Uplading normal assets")
+    # Copy and prepare normal assets
+    prepareForRelease(True)
+    # Upload normal assets.
+    ftpHelper.startUpload(
+        confData.buildDir,
+        confData.domain,
+        confData.username,
+        confData.password,
+        confData.buildDir,
+        confData.targetPath
+    )
+
+    if confData.releaseAssets:
+        print printer.title("Preparing and Uplading releaseAssets")
+
+        # Copy and preapre release only assets.
+        copyAllAssets(confData.releaseAssets,False)
         if confData.optimizeAssets is True:
             optimizeAssets()
+        doInjections()
+
+        # Upload release assets.
+        ftpHelper.startUpload(
+            confData.releaseAssets,
+            confData.domain,
+            confData.username,
+            confData.password,
+            confData.buildDir,
+            confData.targetPath
+        )
+
+
+try:
+    readConfiguration()
+
+    # Create and bump version number if necessary.
+    if confData.version is None:
+        bumpVersionNumber()
 
     if confData.uploadSource:
-        copyAllAssets(confData.updatingAssets, False)
-        for asset in confData.updatingAssets:
-            asset = asset.split(":")
-            nameIndex = 0
-            if len(asset) == 2:
-                nameIndex = 1
-            else:
-                nameIndex = 0
-
-            tempPath = os.path.join(confData.buildDir, asset[nameIndex])
-            injectTo = os.path.join(os.getcwd(),tempPath)
-            fileUtils.replaceStringInFile(injectTo,"<app-name>",confData.gameName)
-            ftpHelper.startUpload(
-                tempPath,
-                confData.domain,
-                confData.username,
-                confData.password,
-                confData.projectRoot,
-                confData.targetPath,
-                asset[nameIndex]
-            )
-            os.remove(tempPath)
-
-        ftpHelper.startUpload(
-            confData.buildDir,
-            confData.domain,
-            confData.username,
-            confData.password,
-            confData.projectRoot,
-            confData.targetPath,
-            None
-        )
-
-        prepareIndexFile()
-
-        tempPath = os.path.join(confData.buildDir, "index.html")
-        ftpHelper.startUpload(
-            tempPath,
-            confData.domain,
-            confData.username,
-            confData.password,
-            confData.projectRoot,
-            confData.targetPath,
-            "index.html"
-        )
+        # Delete everything, copy updatingAssets and upload them.
+        uploadUpdatingAssets()
+        # Delete everything again, copy and optimize all assets along side with release assets.
+        uploadSource()
     else:
-        prepareIndexFile()
+        # Delete everything , optimize assets.
+        prepareForRelease(True)
 
     if confData.zipPath:
         fileUtils.createZipFile(confData.buildDir, confData.zipPath)

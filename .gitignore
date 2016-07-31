@@ -6,3 +6,6 @@ WinSCP.com
 *.jar
 ftpCmd.dat
 *.pyc
+Build/
+*.zip
+*.rar
