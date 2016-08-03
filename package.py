@@ -40,9 +40,10 @@ import os
 import fnmatch
 import subprocess
 import printer
-import dictUtils
+import configHelper
 import fileUtils
 import ftpHelper
+from commonPaths import compiler_dir, cssOptPath, jpgOptPath, pngOptPath, compilerPath
 
 defaultAppVersionTag = "<app-version>"
 defaultAppNameTag = "<app-name>"
@@ -76,40 +77,40 @@ class confData:
     appNameTag = defaultAppNameTag
 
 
-compilerDir = os.path.dirname(os.path.realpath(__file__))
-compilerPath = os.path.join(compilerDir, "compiler.jar")
-pngOptPath = os.path.join(compilerDir, "pngquant.exe")
-jpgOptPath = os.path.join(compilerDir, "jpegtran.exe")
-cssoPath = "csso"
-
 
 def readConfiguration():
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument("-i","--itemsToCopy", help="Items to copy.", default=None)
+        parser.add_argument("-i", "--itemsToCopy", help="Items to copy.", default=None)
         parser.add_argument("-o", "--optimize", help="Optimizes assets on export.", default=None)
         parser.add_argument("-d", "--debug", help="Add debug scripts to the game.", default=None)
-        parser.add_argument("-ak","--appKey", help="App Key", default=None)
-        parser.add_argument("-an","--appName", help="App Name. Defaults to Game Key", default=None)
-        parser.add_argument("-avt","--appVersionTag", help="App Key Tag", default=defaultAppVersionTag)
-        parser.add_argument("-ant","--appNameTag", help="App Name Tag.", default=defaultAppNameTag)
-        parser.add_argument("-v","--verbose", help="Print log", default=None)
-        parser.add_argument("-uz","--uploadZip", help="Should we upload the zip file.", default=None)
-        parser.add_argument("-us","--uploadSource", help="Should we upload the source files.", default=None)
-        parser.add_argument("-pr","--projectRoot", help="Root path of your JavaScript project.", default=None)
-        parser.add_argument("-bd","--buildDir", help="Where to copy the compiled files.", default=None)
-        parser.add_argument("-t","--timeOut", help="FTP timeout.", default=None)
-        parser.add_argument("-wsc","--winScpCmd", help="Extra WinSCP commands.", default=None)
-        parser.add_argument("-cf","--configFile", help="Choose alternative config file.", default="config.ini")
-        parser.add_argument("-af","--authFile", help="Choose alternative auth file.", default="auth.ini")
-        parser.add_argument("-ua","--updatingAssets", help="Alternative files to be used while updating.", default=None)
-        parser.add_argument("-ra","--releaseAssets", help="Alternative files to be used when upload is finished.", default=None)
-        parser.add_argument("-di","--debugItems", help="Items to be copied if debug is enabled", default=None)
-        parser.add_argument("-dd","--debugInjectData", help="Debug Inject instructions.", default=None)
-        parser.add_argument("-id","--injectData", help="Inject instructions.", default=None)
-        parser.add_argument("-ver","--version", help="Version, it will be automatically created and bumped if not provided.", default=None)
-        parser.add_argument("-zp","--zipPath", help="Where to export the zip file containing the project in the end.", default=None)
-        parser.add_argument("-tp","--targetPath", help="Where to upload the project when the compilation is completed. This should be a directory name not the full path. Directory will be created if doesn't exists.", default=None)
+        parser.add_argument("-ak", "--appKey", help="App Key", default=None)
+        parser.add_argument("-an", "--appName", help="App Name. Defaults to Game Key", default=None)
+        parser.add_argument("-avt", "--appVersionTag", help="App Key Tag", default=defaultAppVersionTag)
+        parser.add_argument("-ant", "--appNameTag", help="App Name Tag.", default=defaultAppNameTag)
+        parser.add_argument("-v", "--verbose", help="Print log", default=None)
+        parser.add_argument("-uz", "--uploadZip", help="Should we upload the zip file.", default=None)
+        parser.add_argument("-us", "--uploadSource", help="Should we upload the source files.", default=None)
+        parser.add_argument("-pr", "--projectRoot", help="Root path of your JavaScript project.", default=None)
+        parser.add_argument("-bd", "--buildDir", help="Where to copy the compiled files.", default=None)
+        parser.add_argument("-t", "--timeOut", help="FTP timeout.", default=None)
+        parser.add_argument("-wsc", "--winScpCmd", help="Extra WinSCP commands.", default=None)
+        parser.add_argument("-cf", "--configFile", help="Choose alternative config file.", default="config.ini")
+        parser.add_argument("-af", "--authFile", help="Choose alternative auth file.", default="auth.ini")
+        parser.add_argument("-ua", "--updatingAssets", help="Alternative files to be used while updating.",
+                            default=None)
+        parser.add_argument("-ra", "--releaseAssets", help="Alternative files to be used when upload is finished.",
+                            default=None)
+        parser.add_argument("-di", "--debugItems", help="Items to be copied if debug is enabled", default=None)
+        parser.add_argument("-dd", "--debugInjectData", help="Debug Inject instructions.", default=None)
+        parser.add_argument("-id", "--injectData", help="Inject instructions.", default=None)
+        parser.add_argument("-ver", "--version",
+                            help="Version, it will be automatically created and bumped if not provided.", default=None)
+        parser.add_argument("-zp", "--zipPath", help="Where to export the zip file containing the project in the end.",
+                            default=None)
+        parser.add_argument("-tp", "--targetPath",
+                            help="Where to upload the project when the compilation is completed. This should be a directory name not the full path. Directory will be created if doesn't exists.",
+                            default=None)
 
         args = parser.parse_args()
         if args.itemsToCopy is not None:
@@ -160,107 +161,118 @@ def readConfiguration():
         config = ConfigParser.ConfigParser()
         config.read(args.configFile)
 
-        projectSection = dictUtils.configSectionMap(config, "Project")
-        compilerSection = dictUtils.configSectionMap(config, "Compiler")
-        uploaderSection = dictUtils.configSectionMap(config, "Uploader")
+        # Load Sections
+        project_section = configHelper.configSectionMap(config, "Project")
+        compiler_section = configHelper.configSectionMap(config, "Compiler")
+        uploader_section = configHelper.configSectionMap(config, "Uploader")
+        # Load Target Path
         if confData.targetPath is None:
-            confData.targetPath = dictUtils.getKeyFromDict(uploaderSection, "targetpath")
+            confData.targetPath = configHelper.getKeyFromDict(uploader_section, "targetpath")
         if confData.targetPath is None:
             confData.targetPath = ""
-
+        # Load Project Root
         if confData.projectRoot is None:
-            confData.projectRoot = os.path.normpath(dictUtils.getKeyFromDict(projectSection, "projectroot"))
-
+            confData.projectRoot = os.path.normpath(configHelper.getKeyFromDict(project_section, "projectroot"))
+        # Load Build Dir
         if confData.buildDir is None:
-            confData.buildDir = os.path.normpath(dictUtils.getKeyFromDict(projectSection, "builddir"))
+            confData.buildDir = os.path.normpath(configHelper.getKeyFromDict(project_section, "builddir"))
         else:
             confData.buildDir = os.path.normpath(confData.buildDir)
-
-        confData.buildDir = os.path.join(compilerDir,confData.projectRoot, confData.buildDir)
+        confData.buildDir = os.path.join(compiler_dir, confData.projectRoot, confData.buildDir)
+        # Load Items To Copy
         if confData.itemsToCopy is None:
-            items = dictUtils.getKeyFromDict(projectSection, "itemstocopy")
+            items = configHelper.getKeyFromDict(project_section, "itemstocopy")
         else:
             items = confData.itemsToCopy
-
         if items:
-            confData.itemsToCopy = items.split(",")
+            confData.itemsToCopy = configHelper.splitSafe(items, ",")
+        # Load Debug Items
         if confData.debugItems is None:
-            items = dictUtils.getKeyFromDict(projectSection, "debugitems")
+            items = configHelper.getKeyFromDict(project_section, "debugitems")
         else:
             items = confData.debugItems
         if items:
-            confData.debugItems = items.split(",")
-
+            confData.debugItems = configHelper.splitSafe(items, ",")
+        # Load Debug Inject Data
         if confData.debugInjectData is None:
-            items = dictUtils.getKeyFromDict(projectSection, "debuginjectdata")
+            items = configHelper.getKeyFromDict(project_section, "debuginjectdata")
         else:
             items = confData.debugInjectData
         if items:
-            confData.debugInjectData = items.split(",")
+            confData.debugInjectData = configHelper.splitSafe(items, ",")
             index = 0
             for data in confData.debugInjectData:
-                confData.debugInjectData[index] = data.split(";")
-                index = index + 1
-
+                confData.debugInjectData[index] = configHelper.splitSafe(data, ";")
+                index += 1
+        # Load Inject Data
         if confData.injectData is None:
-            items = dictUtils.getKeyFromDict(projectSection, "injectdata")
+            items = configHelper.getKeyFromDict(project_section, "injectdata")
         else:
             items = confData.injectData
         if items:
-            confData.injectData = items.split(",")
+            confData.injectData = configHelper.splitSafe(items, ",")
             index = 0
             for data in confData.injectData:
-                confData.injectData[index] = data.split(";")
-                index = index + 1
-
+                confData.injectData[index] = configHelper.splitSafe(data, ";")
+                index += 1
+        # Load Zip path
         if confData.zipPath is None:
-            confData.zipPath = dictUtils.getKeyFromDict(compilerSection, "zippath")
+            confData.zipPath = configHelper.getKeyFromDict(compiler_section, "zippath")
         if confData.zipPath is not None:
             confData.zipPath = confData.zipPath.replace(".zip", "")
-        if confData.appKey is None:
-            confData.appKey = dictUtils.getKeyFromDict(projectSection, "appkey")
-        if confData.appName is None:
-            confData.appName = dictUtils.getKeyFromDict(projectSection, "appname")
 
+        # Load App Key
+        if confData.appKey is None:
+            confData.appKey = configHelper.getKeyFromDict(project_section, "appkey")
+        # Load App Name
+        if confData.appName is None:
+            confData.appName = configHelper.getKeyFromDict(project_section, "appname")
+        # Load App Name Tag
         if confData.appNameTag is defaultAppNameTag:
-            temp = dictUtils.getKeyFromDict(projectSection, "appnametag")
+            temp = configHelper.getKeyFromDict(project_section, "appnametag")
             if temp:
                 confData.appNameTag = temp
+        # Load App Version Tag
         if confData.appVersionTag is defaultAppVersionTag:
-            temp = dictUtils.getKeyFromDict(projectSection, "appversiontag")
+            temp = configHelper.getKeyFromDict(project_section, "appversiontag")
             if temp:
                 confData.appVersionTag = temp
-
+        # Load Optimize Assets
         if confData.optimizeAssets is None:
-            confData.optimizeAssets = bool(dictUtils.getKeyFromDict(compilerSection, "optimize"))
+            confData.optimizeAssets = bool(configHelper.getKeyFromDict(compiler_section, "optimize"))
+        # Load Inject Debug
         if confData.injectDebug is None:
-            confData.injectDebug = bool(dictUtils.getKeyFromDict(compilerSection, "debug"))
+            confData.injectDebug = bool(configHelper.getKeyFromDict(compiler_section, "debug"))
+        # Load Is Verbose
         if confData.isVerbose is None:
-            confData.isVerbose = bool(dictUtils.getKeyFromDict(compilerSection, "verbose"))
+            confData.isVerbose = bool(configHelper.getKeyFromDict(compiler_section, "verbose"))
+        # Load Upload Source
         if confData.uploadSource is None:
-            confData.uploadSource = bool(dictUtils.getKeyFromDict(uploaderSection, "uploadsource"))
+            confData.uploadSource = bool(configHelper.getKeyFromDict(uploader_section, "uploadsource"))
+        # Load Uplaod Zip
         if confData.uploadZip is None:
-            confData.uploadZip = bool(dictUtils.getKeyFromDict(uploaderSection, "uploadzip"))
-        if confData.ftpTimeout is None:
-            confData.ftpTimeout = dictUtils.getKeyFromDict(uploaderSection, "timeout")
+            confData.uploadZip = bool(configHelper.getKeyFromDict(uploader_section, "uploadzip"))
+        # Load Extra Win SCP Commands
         if confData.extraWinScpCmds is None:
-            confData.extraWinScpCmds = dictUtils.getKeyFromDict(uploaderSection, "extraWinScpCmds")
-
+            confData.extraWinScpCmds = configHelper.getKeyFromDict(uploader_section, "extraWinScpCmds")
+        # Load Updating Assets
         if confData.updatingAssets is None:
-            items = dictUtils.getKeyFromDict(uploaderSection, "updatingassets")
+            items = configHelper.getKeyFromDict(uploader_section, "updatingassets")
         else:
             items = confData.updatingAssets
         if items:
-            confData.updatingAssets = items.split(",")
-
+            confData.updatingAssets = configHelper.splitSafe(items, ",")
+        # Load Release Assets
         if confData.releaseAssets is None:
-            items = dictUtils.getKeyFromDict(uploaderSection, "releaseassets")
+            items = configHelper.getKeyFromDict(uploader_section, "releaseassets")
         else:
             items = confData.releaseAssets
         if items:
-            confData.releaseAssets = items.split(",")
-
-        if confData.ftpTimeout is not None and confData.ftpTimeout.isdigit() is False:
+            confData.releaseAssets = configHelper.splitSafe(items, ",")
+        # Load FTP Time Out
+        if confData.ftpTimeout is None:
+            confData.ftpTimeout = configHelper.getKeyFromDict(uploader_section, "timeout")
+        if confData.ftpTimeout is not None or confData.ftpTimeout.isdigit() is False:
             confData.ftpTimeout = 20
         else:
             confData.ftpTimeout = int(confData.ftpTimeout)
@@ -268,26 +280,26 @@ def readConfiguration():
         config = ConfigParser.ConfigParser()
         config.read(args.authFile)
 
-        ftpSection = dictUtils.configSectionMap(config, "FTP")
+        # Load FTP Connection Info
+        ftp_section = configHelper.configSectionMap(config, "FTP")
+        confData.username = configHelper.getKeyFromDict(ftp_section, "username")
+        confData.password = configHelper.getKeyFromDict(ftp_section, "password")
+        confData.domain = configHelper.getKeyFromDict(ftp_section, "domain")
 
-        confData.username = dictUtils.getKeyFromDict(ftpSection, "username")
-        confData.password = dictUtils.getKeyFromDict(ftpSection, "password")
-        confData.domain = dictUtils.getKeyFromDict(ftpSection, "domain")
-
+        # Setting FTP Settings
         ftpHelper.timeOut = confData.ftpTimeout
         ftpHelper.extraWinScpCmds = confData.extraWinScpCmds
         ftpHelper.isVerbose = confData.isVerbose
     except:
-        e = sys.exc_info()[0]
-        print e
+        print sys.exc_info()[0]
     return
 
 
-def copyAllAssets(itemList, clear):
-    if itemList is None:
+def copyAllAssets(item_list, clear):
+    if item_list is None:
         return
 
-    if(os.path.exists(confData.buildDir)):
+    if os.path.exists(confData.buildDir):
         if clear is True:
             print printer.title("Clearing: ") + confData.buildDir
             fileUtils.deleteDirRecursive(confData.buildDir)
@@ -297,18 +309,18 @@ def copyAllAssets(itemList, clear):
 
     print printer.title("Copying Assets")
 
-    for item in itemList:
-        itemData = item.split(";")
-        sourceItem = os.path.join(compilerDir,confData.projectRoot, itemData[0])
+    for item in item_list:
+        item_data = item.split(";")
+        source_item = os.path.join(compiler_dir, confData.projectRoot, item_data[0])
 
-        if(len(itemData) == 2):
-            destItem = os.path.join(compilerDir,confData.buildDir, itemData[1])
+        if len(item_data) == 2:
+            dest_item = os.path.join(compiler_dir, confData.buildDir, item_data[1])
         else:
-            destItem = os.path.join(compilerDir,confData.buildDir, itemData[0])
+            dest_item = os.path.join(compiler_dir, confData.buildDir, item_data[0])
 
-        print printer.subTitle("Copying: ") + sourceItem + printer.subTitle(" -> ") + destItem
+        print printer.subTitle("Copying: ") + source_item + printer.subTitle(" -> ") + dest_item
 
-        fileUtils.copyAllRecursive(sourceItem,destItem)
+        fileUtils.copyAllRecursive(source_item, dest_item)
     print printer.okGreen("DONE!")
     return
 
@@ -318,10 +330,10 @@ def optimizeAssets(paths):
         return
     if paths is None:
         paths = [""]
-    elif isinstance(paths,list) is False:
+    elif isinstance(paths, list) is False:
         paths = [paths]
     print printer.title("Optimizing Assets")
-    DEVNULL = open(os.devnull, 'wb')
+    devnull = open(os.devnull, 'wb')
     for path in paths:
         path = path.split(";")
         if len(path) == 2:
@@ -330,125 +342,114 @@ def optimizeAssets(paths):
             path = path[0]
         path = os.path.join(confData.buildDir, path)
         if os.path.isdir(path):
-            for root, dirnames, filenames in os.walk(path):
+            for root, dir_names, file_names in os.walk(path):
                 for extension in ['jpg', 'jpeg', 'png', 'js', 'css']:
-                    for filename in fnmatch.filter(filenames, '*.' + extension):
-                        optimizeAsset(os.path.join(compilerDir, root),filename,extension,DEVNULL)
+                    for filename in fnmatch.filter(file_names, '*.' + extension):
+                        optimizeAsset(os.path.join(compiler_dir, root), filename, extension, devnull)
         elif os.path.isfile(path):
-            fileExtension = os.path.splitext(path)
-            if len(fileExtension) == 2:
-                fileExtension = fileExtension[1]
+            file_extension = os.path.splitext(path)
+            if len(file_extension) == 2:
+                file_extension = file_extension[1]
             else:
                 continue
             for extension in ['.jpg', '.jpeg', '.png', '.js', '.css']:
-                if fileExtension == extension:
-                    optimizeAsset("",path,fileExtension,DEVNULL)
+                if file_extension == extension:
+                    optimizeAsset("", path, file_extension, devnull)
 
-    DEVNULL.close()
+    devnull.close()
     print printer.okGreen("DONE!")
     return
 
 
-def optimizeAsset(root, fileName, extension, devnull):
+def optimizeAsset(root, file_name, extension, devnull):
     if devnull is None:
         devnull = open(os.devnull, 'wb')
-    fileName = os.path.join(root, fileName)
-    print printer.subTitle("Optimizing: ") + fileName
-    if (extension == 'css'):
-        callString = '{1} -i "{0}" -o "{0}"'.format(fileName,cssoPath)
+    file_name = os.path.join(root, file_name)
+    print printer.subTitle("Optimizing: ") + file_name
+    if extension == 'css':
+        call_string = '{1} -i "{0}" -o "{0}"'.format(file_name, cssOptPath)
     elif (extension == 'jpg') or (extension == 'jpeg'):
-        callString = '"{1}" -copy none -optimize -outfile "{0}" "{0}"'.format(fileName,jpgOptPath)
-    elif (extension == 'png'):
-        callString = '"{1}" --force --verbose --ext .png --speed 1 --quality=45-85 "{0}"'.format(fileName,pngOptPath)
-    elif (extension == 'js'):
-        callString = 'java -jar "{1}" --js_output_file="{0}" "{0}"'.format(fileName,compilerPath)
+        call_string = '"{1}" -copy none -optimize -outfile "{0}" "{0}"'.format(file_name, jpgOptPath)
+    elif extension == 'png':
+        call_string = '"{1}" --force --verbose --ext .png --speed 1 --quality=45-85 "{0}"'.format(file_name, pngOptPath)
+    elif extension == 'js':
+        call_string = 'java -jar "{1}" --js_output_file="{0}" "{0}"'.format(file_name, compilerPath)
     else:
         return False
     if confData.isVerbose:
-        subprocess.call(callString, shell=True)
+        subprocess.call(call_string, shell=True)
     else:
-        subprocess.call(callString, stdout=devnull, stderr=subprocess.STDOUT, shell=True)
+        subprocess.call(call_string, stdout=devnull, stderr=subprocess.STDOUT, shell=True)
     return True
 
 
-def injectDebug(items,debugInjectData):
+def injectDebug(items, debug_inject_data):
     if items is None:
         return
     print printer.title("Injecting Debug Files")
     for item in items:
-        sourceItem = os.path.join(compilerDir,confData.projectRoot, item)
-        destItem = os.path.join(compilerDir,confData.buildDir, item)
+        source_item = os.path.join(compiler_dir, confData.projectRoot, item)
+        dest_item = os.path.join(compiler_dir, confData.buildDir, item)
 
-        print printer.subTitle("Copying: ") + sourceItem + printer.subTitle(" -> ") + destItem
+        print printer.subTitle("Copying: ") + source_item + printer.subTitle(" -> ") + dest_item
 
-        fileUtils.copyAllRecursive(sourceItem,destItem)
-    for injectData in debugInjectData:
-        injectStringToFile(injectData[0],injectData[1],injectData[2],confData.buildDir)
+        fileUtils.copyAllRecursive(source_item, dest_item)
+    for injectData in debug_inject_data:
+        injectStringToFile(injectData[0], injectData[1], injectData[2], confData.buildDir)
     print printer.okGreen("DONE!")
     return
 
 
-def injectStrings(injectDatas,rootPath):
-    if injectDatas is None:
+def injectStrings(inject_datas, root_path):
+    if inject_datas is None:
         return
-    for injectData in injectDatas:
-        injectStringToFile(injectData[0],injectData[1],injectData[2],rootPath)
+    for injectData in inject_datas:
+        injectStringToFile(injectData[0], injectData[1], injectData[2], root_path)
 
 
-def injectStringToFile(file, toReplace, toInject, rootPath):
-    if file is None:
+def injectStringToFile(target_file, to_replace, to_inject, root_path):
+    if target_file is None:
         return
-    injectTo = os.path.join(compilerDir,rootPath, file)
-    if os.path.isfile(injectTo):
-        fileUtils.replaceStringInFile(injectTo,toReplace,toInject)
+    inject_to = os.path.realpath(os.path.join(compiler_dir, root_path, target_file))
+    if os.path.isfile(inject_to):
+        fileUtils.replaceStringInFile(inject_to, to_replace, to_inject)
 
 
-def injectAppVersion(version, rootPath):
+def injectAppVersion(version, root_path):
     print printer.title("Injecting App Version")
-    for root, dirnames, filenames in os.walk(rootPath):
-        for filename in filenames:
-            filename = os.path.join(compilerDir,root, filename)
-            injectStringToFile(filename,confData.appVersionTag,version,rootPath)
+    for root, dir_names, file_names in os.walk(root_path):
+        for filename in file_names:
+            filename = os.path.join(compiler_dir, root, filename)
+            injectStringToFile(filename, confData.appVersionTag, version, root_path)
 
 
-def injectAppName(rootPath):
+def injectAppName(root_path):
     print printer.title("Injecting App Name")
-    for root, dirnames, filenames in os.walk(rootPath):
-        for filename in filenames:
-            filename = os.path.join(compilerDir,root, filename)
-            injectStringToFile(filename,confData.appNameTag,confData.appName,rootPath)
+    for root, dir_names, file_names in os.walk(root_path):
+        for filename in file_names:
+            filename = os.path.join(compiler_dir, root, filename)
+            injectStringToFile(filename, confData.appNameTag, confData.appName, root_path)
 
 
 def bumpVersionNumber():
     print printer.title("Bumping version number")
-    targetPath = os.path.join(compilerDir, confData.projectRoot, "appVersion.ini")
-    target = None
-    version = 0
-    if(os.path.exists(targetPath)):
-        target = open(targetPath, 'r')
-        try:
-            version = int(target.readline()) + 1
-            target.close()
-        except:
-            target.close()
-            print printer.warn("Failed to bump version!")
-            print "Program Terminated."
-            sys.exit()
-    target = open(targetPath, 'w')
-    target.write(str(version))
+    from datetime import datetime
+    confData.version = datetime.now().strftime("%Y%m%d%H%M%S%f")
+    target_path = os.path.join(compiler_dir, confData.projectRoot, "appVersion.ini")
+    target = open(target_path, 'w')
+    target.write(confData.version)
     target.close()
-    confData.version = version
     return True
 
 
 def doInjections():
     # Inject debug to all assets.
     if confData.injectDebug and confData.debugItems and confData.debugInjectData:
-        injectDebug(confData.debugItems,confData.debugInjectData)
+        injectDebug(confData.debugItems, confData.debugInjectData)
     # Inject configured tags to all assets.
     if confData.injectData:
-        injectStrings(confData.injectData,confData.buildDir)
-    injectAppVersion(str(confData.version),confData.buildDir)
+        injectStrings(confData.injectData, confData.buildDir)
+    injectAppVersion(confData.version, confData.buildDir)
     injectAppName(confData.buildDir)
 
 
@@ -469,22 +470,22 @@ def uploadUpdatingAssets():
         )
         print printer.title("Clearing uploadingAssets")
         # Remove updating assets.
-        for updatingAsset in confData.updatingAssets:
-            updatingAsset = updatingAsset.split(";")
-            if len(updatingAsset) == 2:
-                fileUtils.deleteDirRecursive(os.path.join(compilerDir, confData.buildDir,updatingAsset[1]))
+        for updating_asset in confData.updatingAssets:
+            updating_asset = updating_asset.split(";")
+            if len(updating_asset) == 2:
+                fileUtils.deleteDirRecursive(os.path.join(compiler_dir, confData.buildDir, updating_asset[1]))
             else:
-                fileUtils.deleteDirRecursive(os.path.join(compilerDir, confData.buildDir,updatingAsset[0]))
+                fileUtils.deleteDirRecursive(os.path.join(compiler_dir, confData.buildDir, updating_asset[0]))
 
 
 def uploadSource():
     print printer.title("Uploading Source Files")
 
-    print printer.title("Preparing and Uplading normal assets")
+    print printer.title("Preparing and Uploading normal assets")
     # Copy and prepare normal assets
-    copyAllAssets(confData.itemsToCopy,True)
-    optimizeAssets(None)
+    copyAllAssets(confData.itemsToCopy, True)
     doInjections()
+    optimizeAssets(None)
     # Upload normal assets.
     ftpHelper.startUpload(
         confData.buildDir,
@@ -496,12 +497,12 @@ def uploadSource():
     )
 
     if confData.releaseAssets:
-        print printer.title("Preparing and Uplading releaseAssets")
+        print printer.title("Preparing and Uploading releaseAssets")
 
         # Copy and preapre release only assets.
-        copyAllAssets(confData.releaseAssets,False)
-        optimizeAssets(confData.releaseAssets)
+        copyAllAssets(confData.releaseAssets, False)
         doInjections()
+        optimizeAssets(confData.releaseAssets)
 
         # Upload release assets.
         ftpHelper.startUpload(
@@ -528,10 +529,10 @@ try:
         uploadSource()
     else:
         # Delete everything , optimize assets.
-        copyAllAssets(confData.itemsToCopy,True)
-        copyAllAssets(confData.releaseAssets,False)
-        optimizeAssets(None)
+        copyAllAssets(confData.itemsToCopy, True)
+        copyAllAssets(confData.releaseAssets, False)
         doInjections()
+        optimizeAssets(None)
 
     if confData.zipPath:
         fileUtils.createZipFile(confData.buildDir, confData.zipPath)
@@ -546,6 +547,6 @@ try:
             )
         raw_input("Press Enter to continue...")
 except:
-        e = sys.exc_info()[0]
-        print e
-        raw_input("Exception occured press Enter to continue...")
+    e = sys.exc_info()[0]
+    print e
+    raw_input("Exception occurred press Enter to continue...")

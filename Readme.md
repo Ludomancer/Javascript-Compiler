@@ -40,9 +40,9 @@ See **sample** directory for a working example.
   - **projectroot, [-pr,--projectRoot]** = Root path of your JavaScript project., default=None
   - **builddir, [-bd,--buildDir]** = Where should the JavaScript Compiler export the optimized files. Relative to projectroot., default=None
   - **debugitems, [-di,--debugItems]** = Only included if the debug switch is enabled., default=None
-  - **debuginjectdata, [-dd,--debugInjectData]** = Replaces the given tag in given file with the given content if debug mode is enabled. Syntax: **\<file-name\>;\<tag\>;\<new string\>**, default=None
-  - **injectdata, [-id,--injectData]** = Replaces the given tag in given file with the given content. Syntax: **\<file-name\>;\<tag\>;\<new string\>**, default=None
-  - **version, [-ver,--version]** = Version number/text to be injected to the project. Automatically bumped by 1 each time if not provided., default=None, default=None
+  - **debuginjectdata, [-dd,--debugInjectData]** = Replaces the given tag in given file with the given content if debug mode is enabled. Syntax: **\<file-name\>;"\<tag\>";"\<new string\>"**, default=None
+  - **injectdata, [-id,--injectData]** = Replaces the given tag in given file with the given content. Syntax: **\<file-name\>;"\<tag\>";"\<new string\>"**, default=None
+  - **version, [-ver,--version]** = Version number/text to be injected to the project. Automatically generated from current date/time with %Y%m%d%H%M%S%f format each time if not provided., default=None
 
 **Compiler Settings**
 - **[Compiler]** = Title for compiler settings. Required.

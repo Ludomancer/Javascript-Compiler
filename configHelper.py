@@ -32,26 +32,38 @@
 # ************************************************************************************************************
 #
 # endregion
+import re
 
 import printer
 
 
-def configSectionMap(config,section):
-	dict1 = {}
-	options = config.options(section)
-	for option in options:
-		try:
-			dict1[option] = config.get(section, option)
-			if dict1[option] == -1:
-				printer.warn("skip: %s" % option)
-		except:
-			printer.error("exception on %s!" % option)
-			dict1[option] = None
-	return dict1
+def configSectionMap(config, section):
+    dict1 = {}
+    options = config.options(section)
+    for option in options:
+        try:
+            dict1[option] = config.get(section, option)
+            if dict1[option] == -1:
+                printer.warn("skip: %s" % option)
+        except:
+            printer.error("exception on %s!" % option)
+            dict1[option] = None
+    return dict1
 
 
-def getKeyFromDict(dict, key):
-	if key in dict:
-		return dict[key]
-	else:
-		return None
+def getKeyFromDict(dictionary, key):
+    if key in dictionary:
+        return dictionary[key]
+    else:
+        return None
+
+
+def splitSafe(string, separator):
+    new_array = re.findall(r'(?:[^' + separator + '"]|"(?:\\.|[^"])*")+', string)
+
+    # Remove string quotes from beginning and end of the string elements.
+    for i, value in enumerate(new_array):
+        if re.match(r'^".*"$', value):
+            new_array[i] = value[1:-1]
+    return new_array
+

@@ -34,6 +34,8 @@
 # endregion
 
 import os
+
+import commonPaths
 import printer
 import subprocess
 
@@ -42,55 +44,49 @@ extraWinScpCmds = ""
 isVerbose = False
 
 
-def startUpload(paths,domain,username,password,buildDir, targetRootPath):
-	compilerDir = os.path.dirname(os.path.realpath(__file__))
-	tempFile = os.path.abspath(os.path.normpath(os.path.join(compilerDir,"ftpCmd.dat")))
-	ftpDataFile = open(tempFile, "w")
-	ftpDataFile.write("OPEN ftp://{0}:{1}@{2}\n".format(username,password,domain))
-	ftpDataFile.write("option batch continue\n")
-	ftpDataFile.write("MKDIR {0}\n".format(targetRootPath))
-	if isinstance(paths,list) is False:
-		paths = [paths]
-	print printer.title("Uploading: ") + str(paths) + printer.subTitle(" -> ") + targetRootPath
-	for path in paths:
-		path = path.split(";")
-		targetPath = targetRootPath
-		localPath = ""
-		print path[0]
-		if len(path) == 2:
-			localPath = os.path.realpath(os.path.join(compilerDir,buildDir,path[1]))
-			targetPath = os.path.relpath(localPath, os.path.join(compilerDir,buildDir))
-		else:
-			localPath = os.path.realpath(os.path.join(compilerDir,buildDir,path[0]))
-			targetPath = os.path.relpath(localPath, os.path.join(compilerDir,buildDir))
-		print "localPath: " + localPath
-		print "targetPath: " + targetPath
-		ftpDataFile.write("LCD \"{0}\"\n".format(os.path.join(compilerDir,buildDir)))
-		ftpDataFile.write("CD \"{0}\"\n".format(targetRootPath))
-		if os.path.isdir(localPath):
-			if targetPath is None:
-				ftpDataFile.write("SYNCHRONIZE remote \"{0}\"\n".format(localPath))
-			else:
-				ftpDataFile.write("SYNCHRONIZE remote \"{0}\" \"{1}\"\n".format(localPath, targetPath))
-		else:
-			ftpDataFile.write("PUT -neweronly \"{0}\" \"{1}\"\n".format(localPath,targetPath))
-	ftpDataFile.write("option batch off\n")
-	ftpDataFile.write("EXIT\n")
+def startUpload(paths, domain, username, password, build_dir, target_root_path):
+    temp_file = os.path.abspath(os.path.normpath(os.path.join(commonPaths.compiler_dir, "ftpCmd.dat")))
+    ftp_data_file = open(temp_file, "w")
+    ftp_data_file.write("OPEN ftp://{0}:{1}@{2}\n".format(username, password, domain))
+    ftp_data_file.write("option batch continue\n")
+    ftp_data_file.write("MKDIR {0}\n".format(target_root_path))
+    if isinstance(paths, list) is False:
+        paths = [paths]
+    print printer.title("Uploading: ") + str(paths) + printer.subTitle(" -> ") + target_root_path
+    for path in paths:
+        path = path.split(";")
+        if len(path) == 2:
+            local_path = os.path.realpath(os.path.join(commonPaths.compiler_dir, build_dir, path[1]))
+            target_path = os.path.relpath(local_path, os.path.join(commonPaths.compiler_dir, build_dir))
+        else:
+            local_path = os.path.realpath(os.path.join(commonPaths.compiler_dir, build_dir, path[0]))
+            target_path = os.path.relpath(local_path, os.path.join(commonPaths.compiler_dir, build_dir))
+        ftp_data_file.write("LCD \"{0}\"\n".format(os.path.join(commonPaths.compiler_dir, build_dir)))
+        ftp_data_file.write("CD \"{0}\"\n".format(target_root_path))
+        if os.path.isdir(local_path):
+            if target_path is None:
+                ftp_data_file.write("SYNCHRONIZE remote \"{0}\"\n".format(local_path))
+            else:
+                ftp_data_file.write("SYNCHRONIZE remote \"{0}\" \"{1}\"\n".format(local_path, target_path))
+        else:
+            ftp_data_file.write("PUT -neweronly \"{0}\" \"{1}\"\n".format(local_path, target_path))
+    ftp_data_file.write("option batch off\n")
+    ftp_data_file.write("EXIT\n")
 
-	ftpDataFile.close()
-	DEVNULL = open(os.devnull, 'wb')
-	
-	callString = "\"" + os.path.normpath(os.path.join(compilerDir,"WinSCP.com")) + "\""
-	if timeOut > 0 is True:
-		callString += " /timeout={0}".format(timeOut)
-	if extraWinScpCmds is not None:
-		callString += extraWinScpCmds
-	callString += " /script=\"{0}\"".format(tempFile)
-	if isVerbose:
-		subprocess.call(callString, shell=True)
-	else:
-		subprocess.call(callString, stdout=DEVNULL, stderr=subprocess.STDOUT, shell=True)
-	DEVNULL.close()
-	os.unlink(ftpDataFile.name)
-	print printer.okGreen("DONE!")
-	return
+    ftp_data_file.close()
+    devnull = open(os.devnull, 'wb')
+
+    call_string = "\"" + os.path.normpath(os.path.join(commonPaths.compiler_dir, "WinSCP.com")) + "\""
+    if timeOut > 0 is True:
+        call_string += " /timeout={0}".format(timeOut)
+    if extraWinScpCmds is not None:
+        call_string += extraWinScpCmds
+    call_string += " /script=\"{0}\"".format(temp_file)
+    if isVerbose:
+        subprocess.call(call_string, shell=True)
+    else:
+        subprocess.call(call_string, stdout=devnull, stderr=subprocess.STDOUT, shell=True)
+    devnull.close()
+    os.unlink(ftp_data_file.name)
+    print printer.okGreen("DONE!")
+    return
