@@ -39,46 +39,54 @@ import shutil
 import printer
 
 
-def deleteDirRecursive(dir):
-	for root, dirs, files in os.walk(dir):
-				for f in files:
-					os.unlink(os.path.join(root, f))
-				for d in dirs:
-					shutil.rmtree(os.path.join(root, d))
-	return
+def deleteDirRecursive(path):
+    if os.path.isfile(path):
+        os.unlink(path)
+        return
+    elif os.path.isdir(path):
+        for root, dirs, files in os.walk(path):
+            for f in files:
+                os.unlink(os.path.join(root, f))
+            for d in dirs:
+                shutil.rmtree(os.path.join(root, d))
+        shutil.rmtree(path)
+        return
 
 
-def copyAllRecursive(sourceItem,destItem):
-	if os.path.isdir(sourceItem):
-		shutil.copytree(sourceItem, destItem)
-	else:
-		shutil.copyfile(sourceItem, destItem)
-	return
+def copyAllRecursive(sourceItem, destItem):
+    if os.path.isdir(sourceItem):
+        shutil.copytree(sourceItem, destItem)
+    elif os.path.isfile(sourceItem):
+        shutil.copyfile(sourceItem, destItem)
+    return
 
 
-def replaceStringInFile(filePath, tag,changeTo):
-	print printer.title("Injecting " + tag + " with: ") + changeTo + " in " + filePath
-	lines = []
-	with open(filePath) as infile:
-		for line in infile:
-			line = line.replace(tag, changeTo)
-			lines.append(line)
-	with open(filePath, 'w') as outfile:
-		for line in lines:
-			outfile.write(line)
-	print printer.okGreen("DONE!")
-	return
+def replaceStringInFile(file_path, tag, change_to):
+    is_injected = False
+    lines = []
+    with open(file_path) as infile:
+        for line in infile:
+            if tag in line:
+                line = line.replace(tag, change_to)
+                is_injected = True
+            lines.append(line)
+    if is_injected:
+        with open(file_path, 'w') as outfile:
+            for line in lines:
+                outfile.write(line)
+        print printer.subTitle("Injected " + tag) + " with: " + printer.subTitle(change_to) + " in " + file_path
+    return
 
 
-def createZipFile(sourceDir, zipPath):
-	print printer.title("Creating zip File: ") + zipPath
-	try:
-		if os.path.exists(zipPath):
-			os.remove(zipPath)
+def createZipFile(source_dir, zip_path):
+    print printer.title("Creating zip File: ") + zip_path
+    try:
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
 
-		shutil.make_archive(zipPath, 'zip', sourceDir)
-	except:
-		e = sys.exc_info()[0]
-		print e
-	print printer.okGreen("DONE!")
-	return
+        shutil.make_archive(zip_path, 'zip', source_dir)
+    except:
+        e = sys.exc_info()[0]
+        print e
+    print printer.okGreen("DONE!")
+    return

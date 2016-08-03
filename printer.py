@@ -33,6 +33,7 @@
 #
 # endregion
 
+
 class BgColors:
 	HEADER = '\033[95m'
 	OKBLUE = '\033[94m'
@@ -43,26 +44,35 @@ class BgColors:
 	BOLD = '\033[1m'
 	UNDERLINE = '\033[4m'
 
+
 def title(text):
-	return getColorText(BgColors.HEADER,text);
+	return getColorText(BgColors.HEADER,text)
+
 
 def warn(text):
-	return getColorText(BgColors.WARNING,text);
+	return getColorText(BgColors.WARNING,text)
+
 
 def error(text):
-	return getColorText(BgColors.FAIL,text);
+
+	return getColorText(BgColors.FAIL,text)
+
 
 def subTitle(text):
-	return getColorText(BgColors.BOLD,text);
+	return getColorText(BgColors.BOLD,text)
+
 
 def okGreen(text):
-	return getColorText(BgColors.OKGREEN,text);
+	return getColorText(BgColors.OKGREEN,text)
+
 
 def okBlue(text):
-	return getColorText(BgColors.OKBLUE,text);
+	return getColorText(BgColors.OKBLUE,text)
+
 
 def printInColor(color,text):
-	print getColorText(color,text);
+	print getColorText(color,text)
+
 
 def getColorText(color, text):
 	return color + text + BgColors.ENDC

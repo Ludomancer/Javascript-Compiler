@@ -1,0 +1,1 @@
+"../package.py" --configFile "../config.ini" -af "../auth.ini" %*
