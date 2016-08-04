@@ -10,9 +10,11 @@ This project uses **Google Closure**, **WinSCP**, **jpegtran** and **pngquant** 
 # Instructions
 
 - **Download** and **Install** [Python 2.7](https://www.python.org/downloads/)
-- **Download** [pngquant](https://pngquant.org/).
-- **Download** [jpegtran](http://jpegclub.org/jpegtran/).
-- **Download** [Google Closure](https://developers.google.com/closure/compiler/).
+- **Download** [pngquant](https://pngquant.org/). Needed for **.png** optimizations.
+- **Download** [jpegtran](http://jpegclub.org/jpegtran/). Needed for **.jpg** optimizations.
+- **Download** [Google Closure](https://developers.google.com/closure/compiler/). Needed for **.js** optimizations.
+- **Download** and **Install** [html-minifier](https://github.com/kangax/html-minifier) Needed for **.html** and **.php** optimizations.
+- **Download** and **Install** [csso](https://github.com/css/csso) Needed for **.css** optimizations.
 - **Copy** **jpegtran.exe**, **pngquant.exe** and **closure-compiler-\<version-number\>.jar** to root folder of python scripts.
 - **Rename** **closure-compiler-\<version-number\>.jar** to **compiler.jar**
 - **Download** [WinSCP Portable](https://winscp.net/eng/download.php)
@@ -49,8 +51,13 @@ See **sample** directory for a working example.
 - **[Compiler]** = Title for compiler settings. Required.
   - **verbose, [-v,--verbose]** = Should we log more details while running., default=None
   - **debug, [-d,--debug]** = Is debug mode enabled as described above., default=None
-  - **optimize, [-o,--optimize]** = Should we optimize .js, .jpg and .png files., default=None
   - **zippath, [-zp,--zipPath]** = Where to export the zip file containing the project in the end., default=None
+  - **optimize, [-o,--optimize]** = Should we optimize .js, .jpg, .png, .html and .css files., default=None
+  - **optimizehtml, [-oh,--optimizeHtml]** = Should we optimize .html files. Needs optimize to be enabled. , default=None
+  - **optimizecss, [-oc,--optimizeCss]** = Should we optimize .css files. Needs optimize to be enabled., default=None
+  - **optimizejs, [-ojs,--optimizeJs]** = Should we optimize .js files. Needs optimize to be enabled., default=None
+  - **optimizejpg, [-oj,--optimizeJpg]** = Should we optimize .jpg files. Needs optimize to be enabled., default=None
+  - **optimizepng, [-op,--optimizePng]** = Should we optimize .png files. Needs optimize to be enabled., default=None
 
 **Uplaoder Settings**
 - **[Uploader]** = Title for uploader settings. Required.
