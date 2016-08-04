@@ -43,6 +43,7 @@ See **sample** directory for a working example.
   - **debuginjectdata, [-dd,--debugInjectData]** = Replaces the given tag in given file with the given content if debug mode is enabled. Syntax: **\<file-name\>;"\<tag\>";"\<new string\>"**, default=None
   - **injectdata, [-id,--injectData]** = Replaces the given tag in given file with the given content. Syntax: **\<file-name\>;"\<tag\>";"\<new string\>"**, default=None
   - **version, [-ver,--version]** = Version number/text to be injected to the project. Automatically generated from current date/time with %Y%m%d%H%M%S%f format each time if not provided., default=None
+  - **bumpVersion, [-bver,--bumpVersion]** = Should we bump the version number or not., default=None
 
 **Compiler Settings**
 - **[Compiler]** = Title for compiler settings. Required.

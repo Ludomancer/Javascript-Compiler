@@ -73,6 +73,7 @@ class confData:
     releaseAssets = None
     injectData = None
     version = None
+    bumpVersion = None
     appVersionTag = defaultAppVersionTag
     appNameTag = defaultAppNameTag
 
@@ -106,6 +107,8 @@ def readConfiguration():
         parser.add_argument("-id", "--injectData", help="Inject instructions.", default=None)
         parser.add_argument("-ver", "--version",
                             help="Version, it will be automatically created and bumped if not provided.", default=None)
+        parser.add_argument("-bver", "--bumpVersion",
+                            help="Should we bump the version number or not.", default=None)
         parser.add_argument("-zp", "--zipPath", help="Where to export the zip file containing the project in the end.",
                             default=None)
         parser.add_argument("-tp", "--targetPath",
@@ -157,6 +160,8 @@ def readConfiguration():
             confData.zipPath = args.zipPath
         if args.targetPath is not None:
             confData.targetPath = args.targetPath
+        if args.bumpVersion is not None:
+            confData.bumpVersion = True if args.bumpVersion == "1" else False
 
         config = ConfigParser.ConfigParser()
         config.read(args.configFile)
@@ -224,6 +229,9 @@ def readConfiguration():
         # Load App Key
         if confData.appKey is None:
             confData.appKey = configHelper.getKeyFromDict(project_section, "appkey")
+        # Load Bump Version
+        if confData.bumpVersion is None:
+            confData.bumpVersion = bool(configHelper.getKeyFromDict(project_section, "bumpversion"))
         # Load App Name
         if confData.appName is None:
             confData.appName = configHelper.getKeyFromDict(project_section, "appname")
@@ -416,6 +424,8 @@ def injectStringToFile(target_file, to_replace, to_inject, root_path):
 
 
 def injectAppVersion(version, root_path):
+    if version is None:
+        version = ""
     print printer.title("Injecting App Version")
     for root, dir_names, file_names in os.walk(root_path):
         for filename in file_names:
@@ -432,6 +442,8 @@ def injectAppName(root_path):
 
 
 def bumpVersionNumber():
+    if confData.bumpVersion is not True:
+        return
     print printer.title("Bumping version number")
     from datetime import datetime
     confData.version = datetime.now().strftime("%Y%m%d%H%M%S%f")
@@ -455,7 +467,7 @@ def doInjections():
 
 def uploadUpdatingAssets():
     if confData.updatingAssets is not None:
-        print printer.title("Preparing and Uplading uploadingAssets")
+        print printer.title("Preparing and Uploading uploadingAssets")
         # Prepare and upload updatingAssets assets if necessary.
         copyAllAssets(confData.updatingAssets, True)
         # Re-inject everything so updating assets also get an injection. Need to optimize just apply for the new files.
