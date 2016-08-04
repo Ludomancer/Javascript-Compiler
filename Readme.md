@@ -13,8 +13,8 @@ This project uses **Google Closure**, **WinSCP**, **jpegtran** and **pngquant** 
 - **Download** [pngquant](https://pngquant.org/). Needed for **.png** optimizations.
 - **Download** [jpegtran](http://jpegclub.org/jpegtran/). Needed for **.jpg** optimizations.
 - **Download** [Google Closure](https://developers.google.com/closure/compiler/). Needed for **.js** optimizations.
-- **Download** and **Install** [html-minifier](https://github.com/kangax/html-minifier) Needed for **.html** and **.php** optimizations.
-- **Download** and **Install** [csso](https://github.com/css/csso) Needed for **.css** optimizations.
+- **Download** and **Install** [html-minifier](https://github.com/kangax/html-minifier). Needed for **.html** and **.php** optimizations.
+- **Download** and **Install** [csso](https://github.com/css/csso). Needed for **.css** optimizations.
 - **Copy** **jpegtran.exe**, **pngquant.exe** and **closure-compiler-\<version-number\>.jar** to root folder of python scripts.
 - **Rename** **closure-compiler-\<version-number\>.jar** to **compiler.jar**
 - **Download** [WinSCP Portable](https://winscp.net/eng/download.php)
