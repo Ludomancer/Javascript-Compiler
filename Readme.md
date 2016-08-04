@@ -1,5 +1,5 @@
 # JavaScript Compiler
-This project uses **Google Closure**, **WinSCP**, **jpegtran** and **pngquant** to optimize and upload your project depending on the configuration or command line arguments provided.
+This project uses **Google Closure**, **WinSCP**, **jpegtran**, **pngquant**, **csso** and **html-minifier** to optimize and upload your project depending on the configuration or command line arguments provided.
 
 # Disclaimer
 - This project uses several other projects for some of its features. They are not packaged within this repository and should be downloaded from their own websites, see description below for a step by step explanation of this process.
