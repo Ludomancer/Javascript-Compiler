@@ -39,14 +39,21 @@ import ConfigParser
 import os
 import fnmatch
 import subprocess
+import shutil
 import printer
 import configHelper
 import fileUtils
 import ftpHelper
-from commonPaths import compiler_dir, cssOptPath, jpgOptPath, pngOptPath, compilerPath
+from commonPaths import compiler_dir, cssOptPath, jpgOptPath, pngOptPath, compilerPath, htmlOptPath
 
 defaultAppVersionTag = "<app-version>"
 defaultAppNameTag = "<app-name>"
+
+jpgFormats = ["jpg", "jpeg"]
+pngFormats = ["png"]
+htmlFormats = ["php", "html"]
+cssFormats = ["css"]
+jsFormats = ["js"]
 
 
 class confData:
@@ -61,7 +68,6 @@ class confData:
     appKey = None
     appName = None
     injectDebug = None
-    optimizeAssets = None
     isVerbose = None
     zipPath = None
     uploadSource = None
@@ -76,14 +82,21 @@ class confData:
     bumpVersion = None
     appVersionTag = defaultAppVersionTag
     appNameTag = defaultAppNameTag
+    optimizeAssets = None
+    optimizeHtml = None
+    optimizeCss = None
+    optimizeJs = None
+    optimizePng = None
+    optimizeJpg = None
 
+
+optExtensions = []
 
 
 def readConfiguration():
     try:
         parser = argparse.ArgumentParser()
         parser.add_argument("-i", "--itemsToCopy", help="Items to copy.", default=None)
-        parser.add_argument("-o", "--optimize", help="Optimizes assets on export.", default=None)
         parser.add_argument("-d", "--debug", help="Add debug scripts to the game.", default=None)
         parser.add_argument("-ak", "--appKey", help="App Key", default=None)
         parser.add_argument("-an", "--appName", help="App Name. Defaults to Game Key", default=None)
@@ -114,12 +127,21 @@ def readConfiguration():
         parser.add_argument("-tp", "--targetPath",
                             help="Where to upload the project when the compilation is completed. This should be a directory name not the full path. Directory will be created if doesn't exists.",
                             default=None)
+        parser.add_argument("-o", "--optimize", help="Optimizes assets on export.", default=None)
+        parser.add_argument("-oh", "--optimizeHtml",
+                            help="Should we optimize .html files. Needs optimize to be enabled.", default=None)
+        parser.add_argument("-oc", "--optimizeCss", help="Should we optimize .css files. Needs optimize to be enabled.",
+                            default=None)
+        parser.add_argument("-ojs", "--optimizeJs", help="Should we optimize .js files. Needs optimize to be enabled.",
+                            default=None)
+        parser.add_argument("-oj", "--optimizeJpg", help="Should we optimize .png files. Needs optimize to be enabled.",
+                            default=None)
+        parser.add_argument("-op", "--optimizePng", help="Should we optimize .jpg files. Needs optimize to be enabled.",
+                            default=None)
 
         args = parser.parse_args()
         if args.itemsToCopy is not None:
             confData.itemsToCopy = args.itemsToCopy
-        if args.optimize is not None:
-            confData.optimizeAssets = True if args.optimize == "1" else False
         if args.debug is not None:
             confData.injectDebug = True if args.debug == "1" else False
         if args.appName is not None:
@@ -163,6 +185,19 @@ def readConfiguration():
         if args.bumpVersion is not None:
             confData.bumpVersion = True if args.bumpVersion == "1" else False
 
+        if args.optimize is not None:
+            confData.optimizeAssets = True if args.optimize == "1" else False
+        if args.optimizeHtml is not None:
+            confData.optimizeHtml = True if args.optimizeHtml == "1" else False
+        if args.optimizeCss is not None:
+            confData.optimizeCss = True if args.optimizeCss == "1" else False
+        if args.optimizeJs is not None:
+            confData.optimizeJs = True if args.optimizeJs == "1" else False
+        if args.optimizeJpg is not None:
+            confData.optimizeJpg = True if args.optimizeJpg == "1" else False
+        if args.optimizePng is not None:
+            confData.optimizePng = True if args.optimizePng == "1" else False
+
         config = ConfigParser.ConfigParser()
         config.read(args.configFile)
 
@@ -170,6 +205,34 @@ def readConfiguration():
         project_section = configHelper.configSectionMap(config, "Project")
         compiler_section = configHelper.configSectionMap(config, "Compiler")
         uploader_section = configHelper.configSectionMap(config, "Uploader")
+
+        # Load Optimize Assets
+        if confData.optimizeAssets is None:
+            confData.optimizeAssets = bool(configHelper.getKeyFromDict(compiler_section, "optimize"))
+
+        if confData.optimizeAssets is True:
+            if confData.optimizeHtml is None:
+                confData.optimizeHtml = bool(configHelper.getKeyFromDict(compiler_section, "optimizehtml"))
+            if confData.optimizeCss is None:
+                confData.optimizeCss = bool(configHelper.getKeyFromDict(compiler_section, "optimizecss"))
+            if confData.optimizeJs is None:
+                confData.optimizeJs = bool(configHelper.getKeyFromDict(compiler_section, "optimizejs"))
+            if confData.optimizeJpg is None:
+                confData.optimizeJpg = bool(configHelper.getKeyFromDict(compiler_section, "optimizejpg"))
+            if confData.optimizePng is None:
+                confData.optimizePng = bool(configHelper.getKeyFromDict(compiler_section, "optimizepng"))
+
+        if confData.optimizeHtml:
+            optExtensions.extend(htmlFormats)
+        if confData.optimizeCss:
+            optExtensions.extend(cssFormats)
+        if confData.optimizeJs:
+            optExtensions.extend(jsFormats)
+        if confData.optimizeJpg:
+            optExtensions.extend(jpgFormats)
+        if confData.optimizePng:
+            optExtensions.extend(pngFormats)
+
         # Load Target Path
         if confData.targetPath is None:
             confData.targetPath = configHelper.getKeyFromDict(uploader_section, "targetpath")
@@ -245,9 +308,6 @@ def readConfiguration():
             temp = configHelper.getKeyFromDict(project_section, "appversiontag")
             if temp:
                 confData.appVersionTag = temp
-        # Load Optimize Assets
-        if confData.optimizeAssets is None:
-            confData.optimizeAssets = bool(configHelper.getKeyFromDict(compiler_section, "optimize"))
         # Load Inject Debug
         if confData.injectDebug is None:
             confData.injectDebug = bool(configHelper.getKeyFromDict(compiler_section, "debug"))
@@ -351,16 +411,16 @@ def optimizeAssets(paths):
         path = os.path.join(confData.buildDir, path)
         if os.path.isdir(path):
             for root, dir_names, file_names in os.walk(path):
-                for extension in ['jpg', 'jpeg', 'png', 'js', 'css']:
+                for extension in optExtensions:
                     for filename in fnmatch.filter(file_names, '*.' + extension):
                         optimizeAsset(os.path.join(compiler_dir, root), filename, extension, devnull)
         elif os.path.isfile(path):
             file_extension = os.path.splitext(path)
             if len(file_extension) == 2:
-                file_extension = file_extension[1]
+                file_extension = file_extension[1][1:]
             else:
                 continue
-            for extension in ['.jpg', '.jpeg', '.png', '.js', '.css']:
+            for extension in optExtensions:
                 if file_extension == extension:
                     optimizeAsset("", path, file_extension, devnull)
 
@@ -374,21 +434,35 @@ def optimizeAsset(root, file_name, extension, devnull):
         devnull = open(os.devnull, 'wb')
     file_name = os.path.join(root, file_name)
     print printer.subTitle("Optimizing: ") + file_name
-    if extension == 'css':
+    if extension in cssFormats:
         call_string = '{1} -i "{0}" -o "{0}"'.format(file_name, cssOptPath)
-    elif (extension == 'jpg') or (extension == 'jpeg'):
+        startProcess(call_string,devnull)
+    elif extension in jpgFormats:
         call_string = '"{1}" -copy none -optimize -outfile "{0}" "{0}"'.format(file_name, jpgOptPath)
-    elif extension == 'png':
+        startProcess(call_string,devnull)
+    elif extension in pngFormats:
         call_string = '"{1}" --force --verbose --ext .png --speed 1 --quality=45-85 "{0}"'.format(file_name, pngOptPath)
-    elif extension == 'js':
+        startProcess(call_string,devnull)
+    elif extension in jsFormats:
         call_string = 'java -jar "{1}" --js_output_file="{0}" "{0}"'.format(file_name, compilerPath)
+        startProcess(call_string,devnull)
+    elif extension in htmlFormats:
+        temp_file_name = file_name + "temp"
+        shutil.copyfile(file_name, temp_file_name)
+        os.unlink(file_name)
+        call_string = '{1} -o "{2}" "{0}" --collapse-whitespace'.format(temp_file_name, htmlOptPath, file_name)
+        startProcess(call_string, devnull)
+        os.unlink(temp_file_name)
     else:
         return False
+    return True
+
+
+def startProcess(call_string, devnull):
     if confData.isVerbose:
         subprocess.call(call_string, shell=True)
     else:
         subprocess.call(call_string, stdout=devnull, stderr=subprocess.STDOUT, shell=True)
-    return True
 
 
 def injectDebug(items, debug_inject_data):

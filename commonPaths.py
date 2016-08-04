@@ -5,3 +5,4 @@ compilerPath = os.path.join(compiler_dir, "compiler.jar")
 pngOptPath = os.path.join(compiler_dir, "pngquant.exe")
 jpgOptPath = os.path.join(compiler_dir, "jpegtran.exe")
 cssOptPath = "csso"
+htmlOptPath = "html-minifier"
