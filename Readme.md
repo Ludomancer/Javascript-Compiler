@@ -59,7 +59,7 @@ See **sample** directory for a working example.
   - **optimizejpg, [-oj,--optimizeJpg]** = Should we optimize .jpg files. Needs optimize to be enabled. Default = True
   - **optimizepng, [-op,--optimizePng]** = Should we optimize .png files. Needs optimize to be enabled. Default = True
 
-**Uplaoder Settings**
+**Uploader Settings**
 - **[Uploader]** = Title for uploader settings. Required.
   - **updatingassets, [-ua,--updatingAssets]** = Assets to be copied to the server while the upload is still going on. An index file saying "Updating..." for example. Files provided here can be renamed automatically with the following Syntax, **\<file-name\>:\<new-file-name\>**.
   - **releaseAssets, [-ra,--releaseAssets]** = Assets to be uploaded once all the assets have been uploaded. Files provided here can be renamed automatically with the following Syntax, **\<file-name\>:\<new-file-name\>**.
