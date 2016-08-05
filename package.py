@@ -96,48 +96,36 @@ optExtensions = []
 def readConfiguration():
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument("-i", "--itemsToCopy", help="Items to copy.", default=None)
-        parser.add_argument("-d", "--debug", help="Add debug scripts to the game.", default=None)
-        parser.add_argument("-ak", "--appKey", help="App Key", default=None)
-        parser.add_argument("-an", "--appName", help="App Name. Defaults to Game Key", default=None)
-        parser.add_argument("-avt", "--appVersionTag", help="App Key Tag", default=defaultAppVersionTag)
-        parser.add_argument("-ant", "--appNameTag", help="App Name Tag.", default=defaultAppNameTag)
-        parser.add_argument("-v", "--verbose", help="Print log", default=None)
-        parser.add_argument("-uz", "--uploadZip", help="Should we upload the zip file.", default=None)
-        parser.add_argument("-us", "--uploadSource", help="Should we upload the source files.", default=None)
-        parser.add_argument("-pr", "--projectRoot", help="Root path of your JavaScript project.", default=None)
-        parser.add_argument("-bd", "--buildDir", help="Where to copy the compiled files.", default=None)
-        parser.add_argument("-t", "--timeOut", help="FTP timeout.", default=None)
-        parser.add_argument("-wsc", "--winScpCmd", help="Extra WinSCP commands.", default=None)
-        parser.add_argument("-cf", "--configFile", help="Choose alternative config file.", default="config.ini")
-        parser.add_argument("-af", "--authFile", help="Choose alternative auth file.", default="auth.ini")
-        parser.add_argument("-ua", "--updatingAssets", help="Alternative files to be used while updating.",
-                            default=None)
-        parser.add_argument("-ra", "--releaseAssets", help="Alternative files to be used when upload is finished.",
-                            default=None)
-        parser.add_argument("-di", "--debugItems", help="Items to be copied if debug is enabled", default=None)
-        parser.add_argument("-dd", "--debugInjectData", help="Debug Inject instructions.", default=None)
-        parser.add_argument("-id", "--injectData", help="Inject instructions.", default=None)
-        parser.add_argument("-ver", "--version",
-                            help="Version, it will be automatically created and bumped if not provided.", default=None)
-        parser.add_argument("-bver", "--bumpVersion",
-                            help="Should we bump the version number or not.", default=None)
-        parser.add_argument("-zp", "--zipPath", help="Where to export the zip file containing the project in the end.",
-                            default=None)
-        parser.add_argument("-tp", "--targetPath",
-                            help="Where to upload the project when the compilation is completed. This should be a directory name not the full path. Directory will be created if doesn't exists.",
-                            default=None)
-        parser.add_argument("-o", "--optimize", help="Optimizes assets on export.", default=None)
-        parser.add_argument("-oh", "--optimizeHtml",
-                            help="Should we optimize .html files. Needs optimize to be enabled.", default=None)
-        parser.add_argument("-oc", "--optimizeCss", help="Should we optimize .css files. Needs optimize to be enabled.",
-                            default=None)
-        parser.add_argument("-ojs", "--optimizeJs", help="Should we optimize .js files. Needs optimize to be enabled.",
-                            default=None)
-        parser.add_argument("-oj", "--optimizeJpg", help="Should we optimize .png files. Needs optimize to be enabled.",
-                            default=None)
-        parser.add_argument("-op", "--optimizePng", help="Should we optimize .jpg files. Needs optimize to be enabled.",
-                            default=None)
+        parser.add_argument("-i", "--itemsToCopy",metavar='', help="Items to copy.")
+        parser.add_argument("-d", "--debug",metavar='', help="Add debug scripts to the game.")
+        parser.add_argument("-ak", "--appKey",metavar='', help="App Key")
+        parser.add_argument("-an", "--appName",metavar='', help="App Name. Defaults to Game Key")
+        parser.add_argument("-avt", "--appVersionTag",metavar='', help="App Key Tag")
+        parser.add_argument("-ant", "--appNameTag",metavar='', help="App Name Tag.")
+        parser.add_argument("-v", "--verbose",metavar='', help="Print log")
+        parser.add_argument("-uz", "--uploadZip",metavar='', help="Should we upload the zip file.")
+        parser.add_argument("-us", "--uploadSource",metavar='', help="Should we upload the source files.")
+        parser.add_argument("-pr", "--projectRoot",metavar='', help="Root path of your JavaScript project.")
+        parser.add_argument("-bd", "--buildDir",metavar='', help="Where to copy the compiled files.")
+        parser.add_argument("-t", "--timeOut",metavar='', help="FTP timeout.")
+        parser.add_argument("-wsc", "--winScpCmd",metavar='', help="Extra WinSCP commands.")
+        parser.add_argument("-cf", "--configFile",metavar='', help="Choose alternative config file.", default="config.ini")
+        parser.add_argument("-af", "--authFile",metavar='', help="Choose alternative auth file.", default="auth.ini")
+        parser.add_argument("-ua", "--updatingAssets",metavar='', help="Alternative files to be used while updating.")
+        parser.add_argument("-ra", "--releaseAssets",metavar='', help="Alternative files to be used when upload is finished.")
+        parser.add_argument("-di", "--debugItems",metavar='', help="Items to be copied if debug is enabled")
+        parser.add_argument("-dd", "--debugInjectData",metavar='', help="Debug Inject instructions.")
+        parser.add_argument("-id", "--injectData",metavar='', help="Inject instructions.")
+        parser.add_argument("-ver", "--version",metavar='', help="Version, it will be automatically created and bumped if not provided.")
+        parser.add_argument("-bver", "--bumpVersion",metavar='',help="Should we bump the version number or not.")
+        parser.add_argument("-zp", "--zipPath",metavar='', help="Where to export the zip file containing the project in the end.")
+        parser.add_argument("-tp", "--targetPath",metavar='',help="Where to upload the project when the compilation is completed. This should be a directory name not the full path. Directory will be created if doesn't exists.")
+        parser.add_argument("-o", "--optimize",metavar='', help="Optimizes assets on export.")
+        parser.add_argument("-oh", "--optimizeHtml",metavar='',help="Should we optimize .html files. Needs optimize to be enabled.")
+        parser.add_argument("-oc", "--optimizeCss",metavar='', help="Should we optimize .css files. Needs optimize to be enabled.")
+        parser.add_argument("-ojs", "--optimizeJs",metavar='', help="Should we optimize .js files. Needs optimize to be enabled.")
+        parser.add_argument("-oj", "--optimizeJpg",metavar='', help="Should we optimize .png files. Needs optimize to be enabled.")
+        parser.add_argument("-op", "--optimizePng",metavar='', help="Should we optimize .jpg files. Needs optimize to be enabled.")
 
         args = parser.parse_args()
         if args.itemsToCopy is not None:
@@ -358,6 +346,17 @@ def readConfiguration():
         ftpHelper.timeOut = confData.ftpTimeout
         ftpHelper.extraWinScpCmds = confData.extraWinScpCmds
         ftpHelper.isVerbose = confData.isVerbose
+		
+		
+		#Set Defaults
+        confData.appVersionTag = confData.appVersionTag if confData.appVersionTag is not None else defaultAppVersionTag
+        confData.appNameTag = confData.appNameTag if confData.appNameTag is not None else defaultAppNameTag
+        optimizeAssets = confData.optimizeAssets if confData.optimizeAssets is not None else True
+        optimizeHtml = confData.optimizeHtml if confData.optimizeHtml is not None else True
+        optimizeCss = confData.optimizeCss if confData.optimizeCss is not None else True
+        optimizeJs = confData.optimizeJs if confData.optimizeJs is not None else True
+        optimizePng = confData.optimizePng if confData.optimizePng is not None else True
+        optimizeJpg = confData.optimizeJpg if confData.optimizeJpg is not None else True	
     except:
         print sys.exc_info()[0]
     return
