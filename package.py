@@ -296,16 +296,24 @@ def readConfiguration():
                 confData.appVersionTag = temp
         # Load Inject Debug
         if confData.injectDebug is None:
-            confData.injectDebug = bool(configHelper.getKeyFromDict(compiler_section, "debug"))
+            confData.injectDebug = configHelper.getKeyFromDict(compiler_section, "debug")
+            if confData.injectDebug:
+                confData.injectDebug = bool(confData.injectDebug)
         # Load Is Verbose
         if confData.isVerbose is None:
-            confData.isVerbose = bool(configHelper.getKeyFromDict(compiler_section, "verbose"))
+            confData.isVerbose = configHelper.getKeyFromDict(compiler_section, "verbose")
+            if confData.isVerbose:
+                confData.isVerbose = bool(confData.isVerbose)
         # Load Upload Source
         if confData.uploadSource is None:
-            confData.uploadSource = bool(configHelper.getKeyFromDict(uploader_section, "uploadsource"))
+            confData.uploadSource = configHelper.getKeyFromDict(uploader_section, "uploadsource")
+            if confData.uploadSource:
+                confData.uploadSource = bool(confData.uploadSource)
         # Load Uplaod Zip
         if confData.uploadZip is None:
-            confData.uploadZip = bool(configHelper.getKeyFromDict(uploader_section, "uploadzip"))
+            confData.uploadZip = configHelper.getKeyFromDict(uploader_section, "uploadzip")
+            if confData.uploadZip:
+                confData.uploadZip = bool(confData.uploadZip)
         # Load Extra Win SCP Commands
         if confData.extraWinScpCmds is None:
             confData.extraWinScpCmds = configHelper.getKeyFromDict(uploader_section, "extraWinScpCmds")
@@ -325,7 +333,9 @@ def readConfiguration():
             confData.releaseAssets = configHelper.splitSafe(items, ",")
         # Load FTP Time Out
         if confData.ftpTimeout is None:
-            confData.ftpTimeout = int(configHelper.getKeyFromDict(uploader_section, "timeout"))
+            confData.ftpTimeout = configHelper.getKeyFromDict(uploader_section, "timeout")
+            if confData.ftpTimeout:
+                confData.ftpTimeout = int(confData.ftpTimeout)
 
         config = ConfigParser.ConfigParser()
         config.read(args.authFile)
