@@ -224,8 +224,6 @@ def readConfiguration():
         # Load Target Path
         if confData.targetPath is None:
             confData.targetPath = configHelper.getKeyFromDict(uploader_section, "targetpath")
-        if confData.targetPath is None:
-            confData.targetPath = ""
         # Load Project Root
         if confData.projectRoot is None:
             confData.projectRoot = os.path.normpath(configHelper.getKeyFromDict(project_section, "projectroot"))
@@ -327,11 +325,7 @@ def readConfiguration():
             confData.releaseAssets = configHelper.splitSafe(items, ",")
         # Load FTP Time Out
         if confData.ftpTimeout is None:
-            confData.ftpTimeout = configHelper.getKeyFromDict(uploader_section, "timeout")
-        if confData.ftpTimeout is not None or confData.ftpTimeout.isdigit() is False:
-            confData.ftpTimeout = 20
-        else:
-            confData.ftpTimeout = int(confData.ftpTimeout)
+            confData.ftpTimeout = int(configHelper.getKeyFromDict(uploader_section, "timeout"))
 
         config = ConfigParser.ConfigParser()
         config.read(args.authFile)
@@ -346,17 +340,18 @@ def readConfiguration():
         ftpHelper.timeOut = confData.ftpTimeout
         ftpHelper.extraWinScpCmds = confData.extraWinScpCmds
         ftpHelper.isVerbose = confData.isVerbose
-		
-		
-		#Set Defaults
+
+        # Set Defaults
         confData.appVersionTag = confData.appVersionTag if confData.appVersionTag is not None else defaultAppVersionTag
         confData.appNameTag = confData.appNameTag if confData.appNameTag is not None else defaultAppNameTag
-        optimizeAssets = confData.optimizeAssets if confData.optimizeAssets is not None else True
-        optimizeHtml = confData.optimizeHtml if confData.optimizeHtml is not None else True
-        optimizeCss = confData.optimizeCss if confData.optimizeCss is not None else True
-        optimizeJs = confData.optimizeJs if confData.optimizeJs is not None else True
-        optimizePng = confData.optimizePng if confData.optimizePng is not None else True
-        optimizeJpg = confData.optimizeJpg if confData.optimizeJpg is not None else True	
+        confData.optimizeAssets = confData.optimizeAssets if confData.optimizeAssets is not None else True
+        confData.optimizeHtml = confData.optimizeHtml if confData.optimizeHtml is not None else True
+        confData.optimizeCss = confData.optimizeCss if confData.optimizeCss is not None else True
+        confData.optimizeJs = confData.optimizeJs if confData.optimizeJs is not None else True
+        confData.optimizePng = confData.optimizePng if confData.optimizePng is not None else True
+        confData.optimizeJpg = confData.optimizeJpg if confData.optimizeJpg is not None else True
+        confData.ftpTimeout = confData.ftpTimeout if confData.ftpTimeout is not None else 20
+        confData.targetPath = confData.targetPath if confData.targetPath is not None else ""
     except:
         print sys.exc_info()[0]
     return

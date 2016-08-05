@@ -63,10 +63,10 @@ See **sample** directory for a working example.
 - **[Uploader]** = Title for uploader settings. Required.
   - **updatingassets, [-ua,--updatingAssets]** = Assets to be copied to the server while the upload is still going on. An index file saying "Updating..." for example. Files provided here can be renamed automatically with the following Syntax, **\<file-name\>:\<new-file-name\>**.
   - **releaseAssets, [-ra,--releaseAssets]** = Assets to be uploaded once all the assets have been uploaded. Files provided here can be renamed automatically with the following Syntax, **\<file-name\>:\<new-file-name\>**.
-  - **targetpath, [-tp,--targetPath]** = Where to upload the project when the compilation is completed. This should be a directory name not the full path. Directory will be created if doesn't exists., default=""
+  - **targetpath, [-tp,--targetPath]** = Where to upload the project when the compilation is completed. This should be a directory name not the full path. Directory will be created if doesn't exists. Default = ""
   - **uploadzip, [-uz,--uploadZip]** = Should we upload the created zip file.
   - **uploadsource, [-us,--uploadSource]** = Should we uploaded the compiled project.
-  - **timeout, [-t,--timeOut]** = Time out for WinSCP.
+  - **timeout, [-t,--timeOut]** = Time out for WinSCP. Default = 20
 
 ## auth.ini
 **FTP Settings**
