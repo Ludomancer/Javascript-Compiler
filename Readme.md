@@ -34,43 +34,43 @@ See **sample** directory for a working example.
 
 **Project Settings**
 - **[Project]** = Title for project settings. Required.
-  - **itemstocopy, [-i,--itemsToCopy]** = Which Files/Folders should be optimized. Comma separated file name list. Auto rename syntax, **\<file-name\>;\<new-file-name\>**, default=None
-  - **appname, [-an,--appName]** = Name of the app, used when injecting app name to files with **appnametag**., default=None
-  - **appkey, [-ak,--appKey]** = Unique name of the app, works as an id and should not have spaces., default=None
-  - **appversiontag, [-avt,--appVersionTag]** = Used to change **appversiontag** for **version** injection. Default="<app-version>"
-  - **appnametag, [-ant,--appNameTag]** = Used to change **appnametag** for **appname* injection. Default="<app-name>"
-  - **projectroot, [-pr,--projectRoot]** = Root path of your JavaScript project., default=None
-  - **builddir, [-bd,--buildDir]** = Where should the JavaScript Compiler export the optimized files. Relative to projectroot., default=None
-  - **debugitems, [-di,--debugItems]** = Only included if the debug switch is enabled., default=None
-  - **debuginjectdata, [-dd,--debugInjectData]** = Replaces the given tag in given file with the given content if debug mode is enabled. Syntax: **\<file-name\>;"\<tag\>";"\<new string\>"**, default=None
-  - **injectdata, [-id,--injectData]** = Replaces the given tag in given file with the given content. Syntax: **\<file-name\>;"\<tag\>";"\<new string\>"**, default=None
-  - **version, [-ver,--version]** = Version number/text to be injected to the project. Automatically generated from current date/time with %Y%m%d%H%M%S%f format each time if not provided., default=None
-  - **bumpVersion, [-bver,--bumpVersion]** = Should we bump the version number or not., default=None
+  - **itemstocopy, [-i,--itemsToCopy]** = Which Files/Folders should be optimized. Comma separated file name list. Auto rename syntax, **\<file-name\>;\<new-file-name\>**
+  - **appname, [-an,--appName]** = Name of the app, used when injecting app name to files with **appnametag**.
+  - **appkey, [-ak,--appKey]** = Unique name of the app, works as an id and should not have spaces.
+  - **appversiontag, [-avt,--appVersionTag]** = Used to change **appversiontag** for **version** injection. Default = "<app-version>"
+  - **appnametag, [-ant,--appNameTag]** = Used to change **appnametag** for **appname* injection. Default = "<app-name>"
+  - **projectroot, [-pr,--projectRoot]** = Root path of your JavaScript project.
+  - **builddir, [-bd,--buildDir]** = Where should the JavaScript Compiler export the optimized files. Relative to projectroot.
+  - **debugitems, [-di,--debugItems]** = Only included if the debug switch is enabled.
+  - **debuginjectdata, [-dd,--debugInjectData]** = Replaces the given tag in given file with the given content if debug mode is enabled. Syntax: **\<file-name\>;"\<tag\>";"\<new string\>"**
+  - **injectdata, [-id,--injectData]** = Replaces the given tag in given file with the given content. Syntax: **\<file-name\>;"\<tag\>";"\<new string\>"**
+  - **version, [-ver,--version]** = Version number/text to be injected to the project. Automatically generated from current date/time with %Y%m%d%H%M%S%f format each time if not provided.
+  - **bumpVersion, [-bver,--bumpVersion]** = Should we bump the version number or not.
 
 **Compiler Settings**
 - **[Compiler]** = Title for compiler settings. Required.
-  - **verbose, [-v,--verbose]** = Should we log more details while running., default=None
-  - **debug, [-d,--debug]** = Is debug mode enabled as described above., default=None
-  - **zippath, [-zp,--zipPath]** = Where to export the zip file containing the project in the end., default=None
-  - **optimize, [-o,--optimize]** = Should we optimize .js, .jpg, .png, .html and .css files., default=None
-  - **optimizehtml, [-oh,--optimizeHtml]** = Should we optimize .html files. Needs optimize to be enabled. , default=None
-  - **optimizecss, [-oc,--optimizeCss]** = Should we optimize .css files. Needs optimize to be enabled., default=None
-  - **optimizejs, [-ojs,--optimizeJs]** = Should we optimize .js files. Needs optimize to be enabled., default=None
-  - **optimizejpg, [-oj,--optimizeJpg]** = Should we optimize .jpg files. Needs optimize to be enabled., default=None
-  - **optimizepng, [-op,--optimizePng]** = Should we optimize .png files. Needs optimize to be enabled., default=None
+  - **verbose, [-v,--verbose]** = Should we log more details while running.
+  - **debug, [-d,--debug]** = Is debug mode enabled as described above.
+  - **zippath, [-zp,--zipPath]** = Where to export the zip file containing the project in the end.
+  - **optimize, [-o,--optimize]** = Should we optimize .js, .jpg, .png, .html and .css files. Default = True
+  - **optimizehtml, [-oh,--optimizeHtml]** = Should we optimize .html files. Needs optimize to be enabled. Default = True
+  - **optimizecss, [-oc,--optimizeCss]** = Should we optimize .css files. Needs optimize to be enabled. Default = True
+  - **optimizejs, [-ojs,--optimizeJs]** = Should we optimize .js files. Needs optimize to be enabled. Default = True
+  - **optimizejpg, [-oj,--optimizeJpg]** = Should we optimize .jpg files. Needs optimize to be enabled. Default = True
+  - **optimizepng, [-op,--optimizePng]** = Should we optimize .png files. Needs optimize to be enabled. Default = True
 
 **Uplaoder Settings**
 - **[Uploader]** = Title for uploader settings. Required.
-  - **updatingassets, [-ua,--updatingAssets]** = Assets to be copied to the server while the upload is still going on. An index file saying "Updating..." for example. Files provided here can be renamed automatically with the following Syntax, **\<file-name\>:\<new-file-name\>**., default=None
-  - **releaseAssets, [-ra,--releaseAssets]** = Assets to be uploaded once all the assets have been uploaded. Files provided here can be renamed automatically with the following Syntax,, default=None **\<file-name\>:\<new-file-name\>**.
+  - **updatingassets, [-ua,--updatingAssets]** = Assets to be copied to the server while the upload is still going on. An index file saying "Updating..." for example. Files provided here can be renamed automatically with the following Syntax, **\<file-name\>:\<new-file-name\>**.
+  - **releaseAssets, [-ra,--releaseAssets]** = Assets to be uploaded once all the assets have been uploaded. Files provided here can be renamed automatically with the following Syntax, **\<file-name\>:\<new-file-name\>**.
   - **targetpath, [-tp,--targetPath]** = Where to upload the project when the compilation is completed. This should be a directory name not the full path. Directory will be created if doesn't exists., default=""
-  - **uploadzip, [-uz,--uploadZip]** = Should we upload the created zip file., default=None
-  - **uploadsource, [-us,--uploadSource]** = Should we uploaded the compiled project., default=None
-  - **timeout, [-t,--timeOut]** = Time out for WinSCP., default=None
+  - **uploadzip, [-uz,--uploadZip]** = Should we upload the created zip file.
+  - **uploadsource, [-us,--uploadSource]** = Should we uploaded the compiled project.
+  - **timeout, [-t,--timeOut]** = Time out for WinSCP.
 
 ## auth.ini
 **FTP Settings**
 - **[FTP]** = Title for ftp settings. Required.
-  - **username, [.ini file only]** = Username for FTP connection., default=None
-  - **password, [.ini file only]** = Password for FTP connection., default=None
-  - **domain , [.ini file only]** = Domain for FTP connection., default=None
+  - **username, [.ini file only]** = Username for FTP connection.
+  - **password, [.ini file only]** = Password for FTP connection.
+  - **domain , [.ini file only]** = Domain for FTP connection.
