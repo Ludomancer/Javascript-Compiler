@@ -5,7 +5,7 @@ This project uses **Google Closure**, **WinSCP**, **jpegtran**, **pngquant**, **
 - This project uses several other projects for some of its features. They are not packaged within this repository and should be downloaded from their own websites, see description below for a step by step explanation of this process.
 - I've created this tool for my own needs, some features may or may not make sense, feel free to suggest changes or send a pull-request!
 - If you think there is something that I've forgot to give credit or a mistake, feel free to contact me.
-- **Contribution are welcome**
+- **Contributions are welcome**
 
 # Instructions
 
